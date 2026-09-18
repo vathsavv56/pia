@@ -123,7 +123,7 @@ const PageList = () => {
   };
 
   return (
-    <div className="flex h-10 w-full items-center gap-2 mt-2 ml-2">
+    <div className="flex h-10 w-[calc(100%-0.5rem)] overflow-x-auto items-center gap-2 mt-2 ml-2">
       {pageArr.map((node, index) => (
         <FileNode
           method={node.method}
@@ -137,7 +137,7 @@ const PageList = () => {
       <button
         type="button"
         className="
-          flex size-7
+          flex size-7 shrink-0
           items-center justify-center
           rounded-md
           hover:bg-white/5
