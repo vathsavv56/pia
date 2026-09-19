@@ -15,7 +15,7 @@ const Client = () => {
         <UrlBar />
       </div>
 
-      <div className="w-full h-full flex items-center ">
+      <div className="w-[calc(100%-1rem)] mx-2 flex-1 flex items-center bg-lgray rounded-md mb-2 overflow-hidden">
         <Request/>
         <Response/>
       </div>
