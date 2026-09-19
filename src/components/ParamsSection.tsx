@@ -1,8 +1,5 @@
-
 const ParamsSection = () => {
-  return (
-    <div>ParamsSection</div>
-  )
+  return <div>ParamsSection</div>
 }
 
 export default ParamsSection

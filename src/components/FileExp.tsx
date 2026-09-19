@@ -1,11 +1,9 @@
-
-const FileExp = ({fileExpIsOpen} : {fileExpIsOpen : boolean}) => {
+const FileExp = ({ fileExpIsOpen }: { fileExpIsOpen: boolean }) => {
   return (
-    <div id="files"
-      className={`min-w-[15%] h-full bg-dgray border-r border-r-lgray ${fileExpIsOpen ? "block" : "hidden"}`}
-    >
-
-    </div>
+    <div
+      id="files"
+      className={`bg-dgray border-r-lgray h-full min-w-[15%] border-r ${fileExpIsOpen ? 'block' : 'hidden'}`}
+    ></div>
   )
 }
 
