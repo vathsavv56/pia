@@ -12,7 +12,7 @@ const UrlBar = () => {
   const [method, setMethod] = useState<HttpMethod>('GET')
   const [isOpen, setIsOpen] = useState<boolean>(false)
 
-  const optionStyles: string = ''
+  
 
   const setColor = (node: HttpMethod) => {
     switch (node) {
@@ -47,7 +47,7 @@ const UrlBar = () => {
         {/* Trigger */}
         <button
           type="button"
-          className="flex h-8 items-center gap-1 rounded-md px-2 text-white hover:bg-white/5"
+          className="flex h-8 items-center gap-1 rounded-md px-2 text-white hover:bg-white/7  "
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -103,7 +103,7 @@ const UrlBar = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setValueT(e.target.value)
           }
-          placeholder={isHovered ? 'Enter a URL' : 'Hey Thanks For Using Pia'}
+          placeholder={isHovered ? 'Enter a URL' : 'Hey Thanks For Using Pia ❤️'}
           onMouseOver={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         />
