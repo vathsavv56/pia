@@ -1,0 +1,699 @@
+PIA HTTP CLIENT — THINGS YOU'LL NEED TO LEARN
+================================================
+
+1. STATE MANAGEMENT
+-------------------
+Learn:
+- Zustand / Context
+- Global state vs local component state
+- Store actions
+- Selectors
+- Subscribing to only part of the state
+- Updating nested state
+- Derived state
+
+You'll need it for:
+- Requests
+- Open FileNodes
+- Active FileNode
+- Collections
+- Folders
+- Environments
+- Response state
+- UI state
+
+
+2. REQUEST / DOMAIN MODELING
+----------------------------
+Learn:
+- TypeScript interfaces
+- Type aliases
+- Discriminated unions
+- Optional fields
+- Nested objects
+- Entity IDs
+
+You'll need to model:
+
+Request
+├── method
+├── url
+├── params
+├── headers
+├── auth
+└── body
+
+Body
+├── none
+├── JSON
+├── text
+├── form-data
+├── URL encoded
+└── binary
+
+
+3. FILE / FOLDER TREE
+---------------------
+Learn:
+- Tree data structures
+- Parent/child relationships
+- Recursive components
+- IDs and references
+- Normalized state
+
+You'll need:
+
+Collection
+└── Folder
+    ├── Folder
+    │   └── Request
+    └── Request
+
+You'll eventually need:
+- Create
+- Rename
+- Delete
+- Move
+- Reorder
+- Drag & drop
+- Nested folders
+
+
+4. FILENODES / OPEN TABS
+------------------------
+Learn:
+- Open/close state
+- Active item state
+- Arrays of IDs
+- Tab management
+
+Example:
+
+fileNodes = ["r1", "r2", "r3"]
+
+activeFileId = "r2"
+
+You'll need:
+- Open request
+- Switch request
+- Close request
+- Close others
+- Close all
+- Reopen
+- Prevent duplicate tabs
+
+
+5. REQUEST EDITING
+------------------
+Learn:
+- Controlled inputs
+- Form state
+- Immutable updates
+- Dynamic lists
+
+You'll need editors for:
+
+URL
+Method
+Query Params
+Path Params
+Headers
+Auth
+Body
+
+Example:
+
+updateHeader(requestId, headerId, {
+    value: "application/json"
+})
+
+
+6. HTTP FUNDAMENTALS
+--------------------
+Learn:
+- HTTP methods
+- Headers
+- Status codes
+- Query parameters
+- Path parameters
+- Request body
+- Content-Type
+- Cookies
+- Redirects
+- HTTPS
+- CORS
+
+Basically understand what you're actually building.
+
+
+7. FETCH / HTTP CLIENT
+----------------------
+Learn:
+- fetch()
+- Request
+- Response
+- RequestInit
+- AbortController
+- Streaming
+- Timeouts
+- Error handling
+
+Flow:
+
+Request object
+      ↓
+Build HTTP request
+      ↓
+fetch()
+      ↓
+Response
+      ↓
+Response state
+      ↓
+Response UI
+
+
+8. URL BUILDING
+---------------
+Learn:
+- URL API
+- URLSearchParams
+- Encoding
+- Path parameters
+
+Example:
+
+/users/:id
+
+becomes:
+
+/users/123
+
+And:
+
+?page=1&limit=20
+
+
+9. VARIABLES / ENVIRONMENTS
+---------------------------
+Learn:
+- Variable resolution
+- Scope
+- String interpolation
+- Environment management
+
+Example:
+
+{{baseUrl}}/users/{{userId}}
+
+Environment:
+
+baseUrl = https://api.example.com
+userId = 123
+
+Before sending:
+
+https://api.example.com/users/123
+
+
+10. AUTHENTICATION
+------------------
+Learn:
+- Basic Auth
+- Bearer tokens
+- API keys
+- OAuth 2.0
+- Access tokens
+- Refresh tokens
+
+Your request object might contain:
+
+auth:
+  type: "bearer"
+  token: "{{token}}"
+
+
+11. REQUEST EXECUTION PIPELINE
+------------------------------
+Learn how to transform:
+
+EDITOR REQUEST
+      ↓
+Resolve variables
+      ↓
+Build URL
+      ↓
+Build headers
+      ↓
+Apply authentication
+      ↓
+Build body
+      ↓
+Send HTTP request
+      ↓
+Receive response
+
+
+12. RESPONSE HANDLING
+---------------------
+Learn:
+- Response headers
+- Status
+- Status text
+- Response body
+- JSON parsing
+- Text responses
+- Binary responses
+- Large responses
+- Error responses
+
+You'll eventually have:
+
+Response
+├── status
+├── headers
+├── body
+├── size
+├── duration
+└── timestamp
+
+
+13. ASYNC STATE
+--------------
+Learn:
+- Promises
+- async/await
+- Loading states
+- Error states
+- Race conditions
+
+Example:
+
+isSending = true
+
+send request
+
+isSending = false
+
+
+14. ABORT / CANCEL REQUEST
+--------------------------
+Learn:
+- AbortController
+
+User clicks:
+
+[Cancel]
+
+Your request needs to stop.
+
+
+15. REQUEST HISTORY
+-------------------
+Learn:
+- History data modeling
+- Persistence
+- Timestamps
+- Request snapshots
+
+Example:
+
+History
+├── GET /users
+├── POST /login
+├── GET /repos
+└── DELETE /users/10
+
+
+16. PERSISTENCE
+---------------
+Learn:
+- localStorage
+- IndexedDB
+- Serialization
+- Deserialization
+- Autosave
+
+Your app should survive:
+
+Browser refresh
+      ↓
+Requests still exist
+
+
+17. IMPORT / EXPORT
+-------------------
+Learn:
+- JSON serialization
+- File APIs
+- File input
+- Blob
+- Downloading files
+- Schema/versioning
+
+Example:
+
+PIA Request
+      ↓
+JSON
+      ↓
+Export file
+
+And:
+
+JSON
+      ↓
+Import
+      ↓
+PIA Request
+
+
+18. DATA MIGRATION
+------------------
+Eventually your request format changes.
+
+v1:
+
+{
+    url: "...",
+    headers: []
+}
+
+v2:
+
+{
+    url: "...",
+    headers: [],
+    variables: []
+}
+
+You'll need:
+- Schema versions
+- Migration functions
+
+
+19. DRAG & DROP
+--------------
+For your collection tree:
+
+Drag Request
+     ↓
+Drop into Folder
+
+Learn:
+- Drag events
+- Drop targets
+- Reordering
+- Tree manipulation
+
+
+20. KEYBOARD SHORTCUTS
+----------------------
+Eventually:
+
+Ctrl + N     → New request
+Ctrl + S     → Save
+Ctrl + W     → Close request
+Ctrl + Enter → Send
+Ctrl + P     → Search
+
+
+21. SEARCH
+----------
+You'll eventually want:
+
+Search requests
+Search collections
+Search headers
+Search URLs
+
+Learn:
+- Filtering
+- Debouncing
+- Search indexing
+
+
+22. CACHING / PERFORMANCE
+------------------------
+You'll eventually have:
+
+100s / 1000s of requests
+
+Learn:
+- Zustand selectors
+- Memoization
+- React.memo
+- Virtualization
+- Avoiding unnecessary renders
+
+
+23. ERROR HANDLING
+------------------
+Handle:
+
+Network error
+CORS error
+Timeout
+Invalid URL
+Invalid JSON
+DNS failure
+401
+403
+404
+500
+Connection refused
+
+Don't let one failed request crash the UI.
+
+
+24. SECURITY
+------------
+VERY IMPORTANT for an API client.
+
+Learn:
+- Token storage
+- Secrets
+- XSS
+- Sensitive data
+- Environment variables
+- OAuth security
+- Avoiding accidental token logging
+
+Especially because users may store:
+
+API keys
+Passwords
+Bearer tokens
+OAuth tokens
+
+
+25. CORS / PROXY
+----------------
+Browser clients have CORS restrictions.
+
+You may eventually need:
+
+React app
+    ↓
+Your backend/proxy
+    ↓
+External API
+
+Learn:
+- CORS
+- Reverse proxy
+- Preflight requests
+- OPTIONS
+- Same-origin policy
+
+
+26. BACKEND / DESKTOP ARCHITECTURE
+----------------------------------
+If your client needs to behave more like real Postman:
+
+Browser
+   ↓
+Backend / Proxy
+   ↓
+API
+
+Or eventually:
+
+Desktop app
+   ↓
+Native HTTP layer
+
+You'll need to understand why browser HTTP
+and desktop HTTP clients are different.
+
+
+27. DATABASE / FILESYSTEM
+-------------------------
+If you make it a serious desktop app:
+
+Workspace
+    ↓
+SQLite / filesystem
+    ↓
+Collections
+Folders
+Requests
+Environments
+History
+
+
+28. UNDO / REDO
+--------------
+Once users edit requests heavily:
+
+Ctrl + Z
+Ctrl + Shift + Z
+
+You'll need:
+- State snapshots
+- History stack
+- Command patterns / patches
+
+
+29. CONCURRENCY / RACE CONDITIONS
+---------------------------------
+Example:
+
+Request A starts
+Request B starts
+Request B finishes
+Request A finishes
+
+Your UI must not accidentally display
+A's result as B's result.
+
+Learn:
+- Request IDs
+- AbortController
+- Async state management
+
+
+30. TESTING
+-----------
+Eventually test:
+
+Request creation
+Header updates
+URL updates
+Folder creation
+Moving requests
+Sending requests
+Variable resolution
+Auth
+Import/export
+
+Learn:
+- Unit testing
+- Integration testing
+- React testing
+
+
+31. TYPESCRIPT ADVANCED
+----------------------
+You'll naturally hit:
+
+- Generics
+- Discriminated unions
+- Utility types
+- Partial<T>
+- Pick<T>
+- Omit<T>
+- Record<K,V>
+- Type guards
+- Type narrowing
+
+
+32. ARCHITECTURE
+----------------
+Eventually you'll need to separate:
+
+UI
+ ↓
+State
+ ↓
+Domain logic
+ ↓
+HTTP execution
+ ↓
+Persistence
+
+Don't put everything inside React components.
+
+
+================================================
+THE FIRST THINGS YOU SHOULD LEARN
+================================================
+
+Don't learn all 32 now.
+
+Your immediate order should be:
+
+1. Zustand / state management
+2. TypeScript data modeling
+3. FileNode + Request relationship
+4. Tree / folder structure
+5. Controlled inputs
+6. HTTP fundamentals
+7. fetch + async state
+8. Request → fetch transformation
+9. Response state
+10. Persistence
+
+Then:
+
+11. Variables / environments
+12. Auth
+13. Import / export
+14. Drag & drop
+15. History
+16. Caching / performance
+17. CORS / proxy
+18. Security
+19. Testing
+
+
+================================================
+YOUR CURRENT ARCHITECTURE
+================================================
+
+                    PIA
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+       Sidebar                Editor
+          │                     │
+     File tree             Active FileNode
+          │                     │
+          └──────────┬──────────┘
+                     │
+                Zustand Store
+                     │
+        ┌────────────┼─────────────┐
+        │            │             │
+     Requests      FileNodes    UI State
+        │            │             │
+        │            │             └── activeTab
+        │            │
+        │            └── ["r1","r2","r3"]
+        │
+        ├── r1
+        ├── r2
+        └── r3
+             │
+             └── method
+                 url
+                 params
+                 headers
+                 auth
+                 body
+                     │
+                     ▼
+                HTTP Executor
+                     │
+                     ▼
+                  Response

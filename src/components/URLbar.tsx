@@ -15,7 +15,7 @@ const UrlBar = () => {
         <input type="text" className="w-full h-full focus:outline-none text-[16px] text-blue-500" />
       </div>
 
-      <button id="send" className="h-8 w-fit text-white px-4 py-2 flex items-center justify-center text-md bg-blue-500 rounded-md">
+      <button id="send" className="h-8 w-fit text-white px-4 py-2 flex items-center justify-center text-md bg-blue-500 rounded-md hover:cursor-pointer">
           Send
       </button>
 
