@@ -1,19 +1,34 @@
-import NavBar from '@/components/NavBar'
-import Client from '@/components/Client'
-import FileExp from '@/components/FileExp'
-import { useState } from 'react'
 
-const App = () => {
-  const [isFileExpOpen, setIsFileExpOpen] = useState<boolean>(true)
+import Client from "@/components/Client"
+import  MainContainer from "@/MainContainer"
+import { createBrowserRouter , RouterProvider} from "react-router"
+import { QueryClientProvider } from "@tanstack/react-query"
 
-  return (
-    <div className="bg-dgray h-screen w-full font-normal">
-      <div className="flex h-screen w-full">
-        <NavBar setIsFileExpOpen={setIsFileExpOpen} />
-        <FileExp fileExpIsOpen={isFileExpOpen} />
-        <Client />
-      </div>
-    </div>
+
+const router = createBrowserRouter([
+  {
+    path:"/",
+    element : <MainContainer/>,
+    children : [
+      {
+        index : true,
+        element : <Client/>
+      },
+      {
+        path : "/req/:id",
+        element : <div>THis is /req/:id</div>
+
+      }
+    ]
+  }
+])
+
+
+
+const App = () =>{
+  return(
+    <RouterProvider router={router}>
+    </RouterProvider>
   )
 }
 
