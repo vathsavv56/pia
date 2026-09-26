@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import {
@@ -8,10 +8,10 @@ import {
   Key01Icon,
   LockIcon,
   Ticket01Icon,
-  UnfoldMoreDownIcon,
   UserAccountIcon,
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
+import Dropdown from '@/components/Dropdown'
 import { useRequestStore, freshAuth } from '@/context/requestStore'
 import type { AuthType, ApiKeyLocation } from '@/context/requestStore'
 
@@ -26,7 +26,7 @@ const authIcon: Record<AuthType, IconSvgElement> = {
 }
 
 const inputStyles =
-  'focus:outline-none rounded-md px-2 py-2 focus:ring-1 focus:ring-blue-500 placeholder:text-white/40 hover:cursor-default bg-transparent'
+  'focus:outline-none rounded-md px-2 py-2 focus:ring-1 focus:ring-blue-500 placeholder:text-white/55 hover:cursor-default bg-transparent'
 
 interface FieldProps {
   icon: IconSvgElement
@@ -55,6 +55,7 @@ const Field = ({
     <input
       type={type}
       value={value}
+      aria-label={placeholder}
       spellCheck={false}
       placeholder={placeholder}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -76,33 +77,13 @@ const Auth = () => {
   const auth = useRequestStore((s) => s.auth)
   const setAuth = useRequestStore((s) => s.setAuth)
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false)
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (!dropdownRef.current?.contains(e.target as Node)) setIsOpen(false)
-    }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isOpen])
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none p-1">
+      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto p-1">
         {auth.type === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
-            <p className="text-sm text-white/30 select-none">
+            <p className="text-sm text-white/55 select-none">
               This request does not use authentication
             </p>
           </div>
@@ -153,7 +134,7 @@ const Auth = () => {
               mono
               className="text-blue-500"
             />
-            <p className="px-1 font-mono text-xs text-white/30">
+            <p className="px-1 font-mono text-xs text-white/55">
               Sent as an Authorization: Bearer header
             </p>
           </div>
@@ -182,60 +163,31 @@ const Auth = () => {
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-1 border-t border-white/5 px-2 py-1.5">
-        <div ref={dropdownRef} className="relative">
-          <button
-            type="button"
-            aria-haspopup="listbox"
-            aria-expanded={isOpen}
-            className="flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white hover:bg-white/7"
-            onClick={() => setIsOpen((prev) => !prev)}
-          >
-            <HugeiconsIcon icon={authIcon[auth.type]} size={13} />
-            <span>{auth.type}</span>
-            <HugeiconsIcon icon={UnfoldMoreDownIcon} size={14} />
-          </button>
-
-          {isOpen && (
-            <div
-              role="listbox"
-              className="bg-lgray absolute bottom-full left-0 z-50 mb-1 w-32 rounded-xl border border-white/10 p-1 shadow-md"
-            >
-              {authTypeArr.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  role="option"
-                  aria-selected={auth.type === item}
-                  className={cn(
-                    'flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left font-mono text-sm text-white hover:bg-white/10',
-                    auth.type === item && 'bg-white/10',
-                  )}
-                  onClick={() => {
-                    setAuth(freshAuth(item))
-                    setIsOpen(false)
-                  }}
-                >
-                  <HugeiconsIcon
-                    icon={authIcon[item]}
-                    size={13}
-                    className="text-white/60"
-                  />
-                  <span>{item}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Dropdown
+          label="Authentication type"
+          value={auth.type}
+          options={authTypeArr.map((item) => ({
+            value: item,
+            label: item,
+            icon: authIcon[item],
+          }))}
+          onSelect={(item) => setAuth(freshAuth(item))}
+          icon={authIcon[auth.type]}
+        />
 
         {auth.type === 'API Key' ? (
-          <div className="flex shrink-0 items-center gap-0.5 rounded-md bg-white/5 p-0.5">
+          <div
+            role="group"
+            aria-label="API key location"
+            className="flex shrink-0 items-center gap-0.5 rounded-md bg-white/5 p-0.5"
+          >
             {apiKeyLocationArr.map((item) => (
               <button
                 key={item}
                 type="button"
                 aria-pressed={auth.location === item}
                 className={cn(
-                  'rounded px-2 py-1 font-mono text-xs text-white/50 hover:bg-white/5',
+                  'rounded px-2 py-1 font-mono text-xs text-white/60 hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none',
                   auth.location === item && 'bg-white/10 text-white',
                 )}
                 onClick={() => setAuth({ ...auth, location: item })}
@@ -246,7 +198,7 @@ const Auth = () => {
           </div>
         ) : (
           auth.type !== 'None' && (
-            <span className="truncate font-mono text-xs text-white/30">
+            <span className="truncate font-mono text-xs text-white/50">
               {auth.type === 'Basic'
                 ? 'Sent as an Authorization: Basic header'
                 : auth.type === 'Bearer' && auth.token.trim() !== ''

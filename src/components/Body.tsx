@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import {
@@ -8,9 +8,9 @@ import {
   CheckmarkCircle01Icon,
   File01Icon,
   TextIcon,
-  UnfoldMoreDownIcon,
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
+import Dropdown from '@/components/Dropdown'
 import { useRequestStore, freshBody } from '@/context/requestStore'
 import type { BodyMode } from '@/context/requestStore'
 
@@ -24,7 +24,7 @@ const modeIcon: Record<BodyMode, IconSvgElement> = {
 }
 
 const inputStyles =
-  'focus:outline-none rounded-md px-2 py-2 focus:ring-1 focus:ring-blue-500 placeholder:text-white/40 hover:cursor-default bg-transparent'
+  'focus:outline-none rounded-md px-2 py-2 focus:ring-1 focus:ring-blue-500 placeholder:text-white/55 hover:cursor-default bg-transparent'
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return '0 B'
@@ -126,28 +126,8 @@ const Body = () => {
   const body = useRequestStore((s) => s.body)
   const setBody = useRequestStore((s) => s.setBody)
   const [tabMovesFocus, setTabMovesFocus] = useState<boolean>(false)
-  const [isOpen, setIsOpen] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const jsonRef = useRef<HTMLTextAreaElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (!dropdownRef.current?.contains(e.target as Node)) setIsOpen(false)
-    }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isOpen])
 
   const applyEdit = ({ value, start, end }: Edit) => {
     const el = jsonRef.current
@@ -205,10 +185,10 @@ const Body = () => {
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
+      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto">
         {body.mode === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
-            <p className="text-sm text-white/30 select-none">
+            <p className="text-sm text-white/55 select-none">
               This request does not send a body
             </p>
           </div>
@@ -218,6 +198,7 @@ const Body = () => {
           <div className="h-full w-full px-1">
             <textarea
               value={text}
+              aria-label="Text body"
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setBody({ ...body, text: e.target.value })
               }
@@ -236,6 +217,7 @@ const Body = () => {
             <textarea
               ref={jsonRef}
               value={json}
+              aria-label="JSON body"
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setBody({ ...body, json: e.target.value })
               }
@@ -256,6 +238,7 @@ const Body = () => {
             <input
               ref={fileInputRef}
               type="file"
+              aria-label="Body file"
               className="hidden"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setBody({ ...body, file: e.target.files?.[0] ?? null })
@@ -266,7 +249,7 @@ const Body = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border border-white/10 text-white/40 hover:border-white/20 hover:bg-white/5 hover:text-white/70"
+                className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border border-white/10 text-white/50 hover:border-white/20 hover:bg-white/5 hover:text-white/80 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
               >
                 <HugeiconsIcon icon={File01Icon} size={24} />
                 <span className="text-sm">Select a file to send</span>
@@ -283,7 +266,7 @@ const Body = () => {
                     <span className="truncate font-mono text-sm text-white/90">
                       {file.name}
                     </span>
-                    <span className="font-mono text-xs text-white/40">
+                    <span className="font-mono text-xs text-white/55">
                       {formatBytes(file.size)}
                     </span>
                   </div>
@@ -293,7 +276,7 @@ const Body = () => {
                   type="button"
                   aria-label={`Remove ${file.name}`}
                   onClick={() => setBody({ ...body, file: null })}
-                  className="flex size-6 shrink-0 items-center justify-center rounded-sm text-gray-500 transition-all hover:bg-white/10 hover:text-white"
+                  className="flex size-6 shrink-0 items-center justify-center rounded-sm text-gray-500 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
                 >
                   <HugeiconsIcon icon={Cancel01Icon} size={14} />
                 </button>
@@ -305,53 +288,20 @@ const Body = () => {
 
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-1 border-t border-white/5 px-2 py-1.5">
         <div className="flex items-center gap-2">
-          <div ref={dropdownRef} className="relative">
-            <button
-              type="button"
-              aria-haspopup="listbox"
-              aria-expanded={isOpen}
-              className="flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white hover:bg-white/7"
-              onClick={() => setIsOpen((prev) => !prev)}
-            >
-              <HugeiconsIcon icon={modeIcon[body.mode]} size={13} />
-              <span>{body.mode}</span>
-              <HugeiconsIcon icon={UnfoldMoreDownIcon} size={14} />
-            </button>
-
-            {isOpen && (
-              <div
-                role="listbox"
-                className="bg-lgray absolute bottom-full left-0 z-50 mb-1 w-32 rounded-xl border border-white/10 p-1 shadow-md"
-              >
-                {bodyModeArr.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    role="option"
-                    aria-selected={body.mode === item}
-                    className={cn(
-                      'flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left font-mono text-sm text-white hover:bg-white/10',
-                      body.mode === item && 'bg-white/10',
-                    )}
-                    onClick={() => {
-                      setBody(freshBody(item))
-                      setIsOpen(false)
-                    }}
-                  >
-                    <HugeiconsIcon
-                      icon={modeIcon[item]}
-                      size={13}
-                      className="text-white/60"
-                    />
-                    <span>{item}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <Dropdown
+            label="Body mode"
+            value={body.mode}
+            options={bodyModeArr.map((item) => ({
+              value: item,
+              label: item,
+              icon: modeIcon[item],
+            }))}
+            onSelect={(item) => setBody(freshBody(item))}
+            icon={modeIcon[body.mode]}
+          />
 
           {tabMovesFocus && (
-            <span className="font-mono text-xs text-blue-500">
+            <span role="status" className="font-mono text-xs text-blue-500">
               Tab moves focus
             </span>
           )}
@@ -360,6 +310,8 @@ const Body = () => {
         {body.mode === 'JSON' && (
           <div className="flex flex-wrap items-center gap-2">
             <div
+              role="status"
+              aria-live="polite"
               className={cn(
                 'flex items-center gap-1 text-xs',
                 isJsonValid ? 'text-green-500' : 'text-red-500',
@@ -382,7 +334,7 @@ const Body = () => {
               type="button"
               onClick={formatJson}
               disabled={!isJsonValid || json.trim() === ''}
-              className="flex h-7 w-fit items-center gap-1 rounded-md px-2 text-sm text-white/70 hover:cursor-default hover:bg-white/7 disabled:text-white/20 disabled:hover:bg-transparent"
+              className="flex h-7 w-fit items-center gap-1 rounded-md px-2 text-sm text-white/70 hover:cursor-default hover:bg-white/7 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none disabled:text-white/40 disabled:hover:bg-transparent"
             >
               <HugeiconsIcon icon={BracesIcon} size={13} />
               <span>Format</span>

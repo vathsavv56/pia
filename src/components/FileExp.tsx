@@ -136,38 +136,77 @@ type File = {
 //   },
 // ]
 
-
-const startData:File[] = [
+const startData: File[] = [
   {
-    id : "1",
-    name : "vathsavv56-folder",
-    isFolder : true,
-    child : [
-     { id : "2",
-      name : "Request-1",
-      isFolder : false,
-    }
-
-    ]
-  }
+    id: '1',
+    name: 'vathsavv56-folder',
+    isFolder: true,
+    child: [{ id: '2', name: 'Request-1', isFolder: false }],
+  },
 ]
 const Node = ({ file, depth }: { file: File; depth: number }) => {
   const [expand, setExpand] = useState(false)
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>('#files [role="treeitem"]'),
+    )
+    const index = items.indexOf(e.currentTarget)
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        items[index + 1]?.focus()
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        items[index - 1]?.focus()
+        break
+      case 'ArrowRight':
+        if (file.isFolder && !expand) {
+          e.preventDefault()
+          setExpand(true)
+        }
+        break
+      case 'ArrowLeft':
+        if (file.isFolder && expand) {
+          e.preventDefault()
+          setExpand(false)
+        }
+        break
+      case 'Home':
+        e.preventDefault()
+        items[0]?.focus()
+        break
+      case 'End':
+        e.preventDefault()
+        items[items.length - 1]?.focus()
+        break
+      default:
+        break
+    }
+  }
+
   return (
-    <div className="w-full min-w-0">
-      <div
-        className="flex w-full min-w-0 cursor-pointer items-center py-1.5 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white"
+    <div className="w-full min-w-0" role="none">
+      <button
+        type="button"
+        role="treeitem"
+        aria-level={depth + 1}
+        aria-expanded={file.isFolder ? expand : undefined}
+        className="flex w-full min-w-0 cursor-pointer items-center rounded-sm py-1.5 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
         style={{ paddingLeft: `${depth * 12 + 8}px`, paddingRight: '8px' }}
         onClick={() => {
           if (file.isFolder) setExpand((p) => !p)
         }}
+        onKeyDown={handleKeyDown}
       >
         {file.isFolder ? (
           <>
             <HugeiconsIcon
               icon={ArrowDown01Icon}
               size={14}
+              aria-hidden
               className={`mr-1 transition-transform duration-200 ${
                 expand ? 'rotate-0' : '-rotate-90'
               }`}
@@ -175,21 +214,23 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
             <HugeiconsIcon
               icon={Folder01Icon}
               size={16}
+              aria-hidden
               className="mr-2 text-blue-400"
             />
           </>
         ) : (
           <>
-            <div className="mr-1 w-3.5 shrink-0" />
+            <div className="mr-1 w-3.5 shrink-0" aria-hidden />
             <HugeiconsIcon
               icon={File02Icon}
               size={16}
+              aria-hidden
               className="mr-2 text-gray-400"
             />
           </>
         )}
         <span className="truncate">{file.name}</span>
-      </div>
+      </button>
 
       {file.isFolder && file?.child && expand && (
         <FileView list={file.child} depth={depth + 1} />
@@ -198,9 +239,17 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
   )
 }
 
-const FileView = ({ list, depth = 0 }: { list: File[]; depth?: number }) => {
+const FileView = ({
+  list,
+  depth = 0,
+  role = 'none',
+}: {
+  list: File[]
+  depth?: number
+  role?: 'tree' | 'group' | 'none'
+}) => {
   return (
-    <div className="flex w-full min-w-0 flex-col">
+    <div role={role} className="flex w-full min-w-0 flex-col">
       {list.map((item) => (
         <Node key={item.id} file={item} depth={depth} />
       ))}
@@ -220,11 +269,11 @@ const FileExp = ({ fileExpIsOpen }: { fileExpIsOpen: boolean }) => {
       )}
     >
       <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
-        <HugeiconsIcon icon={IceCubesIcon} size={18} />
+        <HugeiconsIcon icon={IceCubesIcon} size={18} aria-hidden />
         <p className="truncate text-sm">vathsavv56</p>
       </div>
 
-      <FileView list={startData} />
+      <FileView list={startData} role="tree" />
     </aside>
   )
 }

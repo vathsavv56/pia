@@ -9,7 +9,7 @@ import { useRequestStore } from '@/context/requestStore'
 import type { ListKey } from '@/context/Keyvalue'
 
 const inputStyles =
-  'focus:outline-none w-full min-w-0 rounded-md px-1.5 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 placeholder:text-white/40 hover:cursor-default bg-transparent sm:px-2 sm:py-2'
+  'focus:outline-none w-full min-w-0 rounded-md px-1.5 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 placeholder:text-white/55 hover:cursor-default bg-transparent sm:px-2 sm:py-2'
 
 const KeyValueList = ({ list }: { list: ListKey }) => {
   const rows = useRequestStore((s) => s[list])
@@ -18,30 +18,35 @@ const KeyValueList = ({ list }: { list: ListKey }) => {
   const removeRow = useRequestStore((s) => s.removeRow)
 
   return (
-    <div className="h-full w-full scrollbar-none overflow-y-auto text-white">
+    <div
+      role="group"
+      aria-label={list === 'params' ? 'Query parameters' : 'Request headers'}
+      className="h-full w-full scrollbar-none overflow-y-auto text-white"
+    >
       <div className="flex flex-col gap-0.5 p-1">
-        {rows.map((row) => (
+        {rows.map((row, index) => (
           <div
             key={row.id}
             className="group grid w-full grid-cols-[auto_1fr_1fr_auto] items-center gap-1 rounded-md px-0.5 hover:bg-white/7 sm:gap-2 sm:px-1"
           >
             <button
               type="button"
-              role="checkbox"
-              aria-checked={row.isIncluded}
-              aria-label={`Toggle ${row.keyP || 'row'}`}
+              aria-pressed={row.isIncluded}
+              aria-label={`Include ${row.keyP || `row ${index + 1}`}`}
               onClick={() => toggleRow(list, row.id)}
-              className="flex size-5 shrink-0 items-center justify-center rounded-sm"
+              className="flex size-5 shrink-0 items-center justify-center rounded-sm focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
             >
               <HugeiconsIcon
                 icon={row.isIncluded ? CheckmarkSquare02Icon : SolidLine02Icon}
                 size={14}
-                className={row.isIncluded ? 'text-green-500' : 'text-white/40'}
+                className={row.isIncluded ? 'text-green-500' : 'text-white/50'}
+                aria-hidden
               />
             </button>
 
             <input
               type="text"
+              aria-label={`Key ${index + 1}`}
               className={cn(inputStyles, 'text-emerald-500')}
               placeholder="Key"
               value={row.keyP}
@@ -52,6 +57,7 @@ const KeyValueList = ({ list }: { list: ListKey }) => {
 
             <input
               type="text"
+              aria-label={`Value ${index + 1}`}
               className={cn(inputStyles, 'text-yellow-500')}
               placeholder="Value"
               value={row.value}
@@ -62,11 +68,11 @@ const KeyValueList = ({ list }: { list: ListKey }) => {
 
             <button
               type="button"
-              aria-label={`Delete ${row.keyP || 'row'}`}
+              aria-label={`Delete ${row.keyP || `row ${index + 1}`}`}
               onClick={() => removeRow(list, row.id)}
-              className="flex size-5 shrink-0 items-center justify-center rounded-sm text-white/40 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10 hover:text-white"
+              className="flex size-5 shrink-0 items-center justify-center rounded-sm text-white/50 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
             >
-              <HugeiconsIcon icon={Delete02Icon} size={14} />
+              <HugeiconsIcon icon={Delete02Icon} size={14} aria-hidden />
             </button>
           </div>
         ))}

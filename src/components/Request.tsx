@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import ParamsSection from '@/components/ParamsSection'
 import Headers from '@/components/Headers'
 import Auth from '@/components/Auth'
@@ -9,6 +9,9 @@ import { cn } from '@/utils/cn'
 type Tab = 'Params' | 'Headers' | 'Auth' | 'Body'
 
 const tabArr: Tab[] = ['Params', 'Headers', 'Auth', 'Body']
+
+const tabId = (tab: Tab) => `request-tab-${tab}`
+const panelId = (tab: Tab) => `request-panel-${tab}`
 
 const Request = () => {
   const renderTab = (tab: Tab) => {
@@ -32,47 +35,109 @@ const Request = () => {
 
   const [currTab, setCurrTab] = useState<Tab>('Params')
 
+  const tablistRef = useRef<HTMLDivElement>(null)
+
   const params = useRequestStore((s) => s.params)
   const headers = useRequestStore((s) => s.headers)
   const filledCount = (rows: typeof params) =>
     rows.filter((row) => row.keyP !== '').length
 
+  const focusTab = (tab: Tab) => {
+    setCurrTab(tab)
+    tablistRef.current
+      ?.querySelector<HTMLButtonElement>(`#${CSS.escape(tabId(tab))}`)
+      ?.focus()
+  }
+
+  const handleTabListKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabArr.indexOf(currTab)
+
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault()
+        focusTab(tabArr[(current + 1) % tabArr.length])
+        break
+      case 'ArrowLeft':
+        e.preventDefault()
+        focusTab(tabArr[(current - 1 + tabArr.length) % tabArr.length])
+        break
+      case 'Home':
+        e.preventDefault()
+        focusTab(tabArr[0])
+        break
+      case 'End':
+        e.preventDefault()
+        focusTab(tabArr[tabArr.length - 1])
+        break
+      default:
+        break
+    }
+  }
+
   return (
-    <section className="bg-dgray flex w-full min-h-[24rem] flex-col rounded-md lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0 lg:overflow-hidden">
+    <section className="bg-dgray flex min-h-[24rem] w-full flex-col rounded-md lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0 lg:overflow-hidden">
       <div
+        ref={tablistRef}
         role="tablist"
+        aria-label="Request sections"
+        onKeyDown={handleTabListKeyDown}
         className={cn(
-          'scrollbar-none mt-2 flex w-full shrink-0 items-center gap-1 overflow-x-auto text-white sm:mt-5 sm:w-fit sm:justify-around sm:gap-2',
+          'mt-2 flex w-full shrink-0 scrollbar-none items-center gap-1 overflow-x-auto text-white sm:mt-5 sm:w-fit sm:justify-around sm:gap-2',
         )}
       >
-        {tabArr.map((item) => (
-          <button
-            key={item}
-            type="button"
-            role="tab"
-            aria-selected={currTab === item}
-            className={cn(
-              'flex h-fit w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-sm whitespace-nowrap hover:bg-white/5',
-              currTab === item && 'bg-white/10',
-            )}
-            onClick={() => setCurrTab(item)}
-          >
-            <span>{item}</span>
-            {item === 'Params' && (
-              <span className="text-sm text-green-500">
-                {filledCount(params)}
-              </span>
-            )}
-            {item === 'Headers' && (
-              <span className="text-sm text-amber-500">
-                {filledCount(headers)}
-              </span>
-            )}
-          </button>
-        ))}
+        {tabArr.map((item) => {
+          const isSelected = currTab === item
+          const count =
+            item === 'Params'
+              ? filledCount(params)
+              : item === 'Headers'
+                ? filledCount(headers)
+                : null
+
+          return (
+            <button
+              key={item}
+              id={tabId(item)}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              aria-controls={panelId(item)}
+              tabIndex={isSelected ? 0 : -1}
+              className={cn(
+                'flex h-fit w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-sm whitespace-nowrap hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none',
+                isSelected && 'bg-white/10',
+              )}
+              onClick={() => setCurrTab(item)}
+            >
+              <span>{item}</span>
+              {count !== null && (
+                <span
+                  aria-hidden
+                  className={cn(
+                    'text-sm',
+                    item === 'Params' ? 'text-green-500' : 'text-amber-500',
+                  )}
+                >
+                  {count}
+                </span>
+              )}
+              {count !== null && (
+                <span className="sr-only">{`, ${count} filled`}</span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      <div className="min-h-0 w-full flex-1">{renderTab(currTab)}</div>
+      <div
+        id={panelId(currTab)}
+        role="tabpanel"
+        aria-labelledby={tabId(currTab)}
+        tabIndex={0}
+        className="min-h-0 w-full flex-1 focus:outline-none"
+      >
+        {renderTab(currTab)}
+      </div>
     </section>
   )
 }

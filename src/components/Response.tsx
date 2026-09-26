@@ -40,12 +40,13 @@ const HeadersList = ({ headersList }: HeadersListProps) => {
       <button
         type="button"
         aria-expanded={toggle}
-        className="mb-2 flex items-center gap-2 text-white/80"
+        className="mb-2 flex items-center gap-2 text-white/80 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
         onClick={() => setToggle((prev) => !prev)}
       >
         <span className="flex size-6 shrink-0 items-center justify-center rounded-md hover:bg-white/10">
           <HugeiconsIcon
             icon={ArrowDown01Icon}
+            aria-hidden
             className={`text-white/60 transition-transform duration-300 ${toggle ? 'rotate-0' : '-rotate-90'}`}
           />
         </span>
@@ -53,7 +54,7 @@ const HeadersList = ({ headersList }: HeadersListProps) => {
       </button>
 
       {toggle && (
-        <div className="mr-2 ml-8 rounded-md border border-white/5 bg-lgray p-3">
+        <div className="bg-lgray mr-2 ml-8 rounded-md border border-white/5 p-3">
           <table className="w-full table-fixed text-left font-mono text-xs sm:text-sm">
             <tbody>
               {Object.entries(displayHeaders).map(([key, value]) => (
@@ -97,9 +98,12 @@ const Response = ({
   }
 
   return (
-    <section className="bg-lgray flex min-h-[18rem] w-full flex-col overflow-y-auto rounded-md p-3 sm:p-5 lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0">
+    <section
+      aria-label="Response"
+      className="bg-lgray flex min-h-[18rem] w-full flex-col overflow-y-auto rounded-md p-3 sm:p-5 lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0"
+    >
       <HeadersList />
-      <div className="min-w-0">
+      <div className="min-w-0" aria-live="polite">
         <JsonView
           value={parsedData as object}
           style={{

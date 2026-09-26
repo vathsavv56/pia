@@ -35,10 +35,10 @@ export const FileNode = ({ method, name, onDelete }: FileNodeProps) => {
         <button
           type="button"
           aria-label={`Close ${name}`}
-          className="flex size-6 items-center justify-center rounded-sm text-gray-500 opacity-100 transition-all hover:bg-white/10 hover:text-white"
+          className="flex size-6 items-center justify-center rounded-sm text-gray-400 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
           onClick={onDelete}
         >
-          <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
+          <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" aria-hidden />
         </button>
       </div>
     </div>
@@ -86,7 +86,11 @@ const PageList = () => {
   }
 
   return (
-    <div className="scrollbar-none mt-1 ml-2 flex h-9 w-[calc(100%-0.5rem)] shrink-0 items-center gap-2 overflow-x-auto sm:mt-2 sm:h-10">
+    <div
+      role="group"
+      aria-label="Open requests"
+      className="mt-1 ml-2 flex h-9 w-[calc(100%-0.5rem)] shrink-0 scrollbar-none items-center gap-2 overflow-x-auto sm:mt-2 sm:h-10"
+    >
       {pageArr.map((node, index) => (
         <FileNode
           method={node.method}
@@ -99,10 +103,16 @@ const PageList = () => {
       {/* Add button */}
       <button
         type="button"
-        className="flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-white/5"
+        aria-label="New request"
+        className="flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
         onClick={add}
       >
-        <HugeiconsIcon icon={PlusIcon} className="text-white" size={13} />
+        <HugeiconsIcon
+          icon={PlusIcon}
+          className="text-white"
+          size={13}
+          aria-hidden
+        />
       </button>
     </div>
   )

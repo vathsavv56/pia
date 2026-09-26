@@ -1,18 +1,24 @@
-import { UnfoldMoreDownIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { useState } from 'react'
 import { cn } from '@/utils/cn'
+import Dropdown from '@/components/Dropdown'
 
 type HttpMethod =
   'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
+
+const methodArr: HttpMethod[] = [
+  'GET',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+  'HEAD',
+  'OPTIONS',
+]
 
 const UrlBar = () => {
   const [valueT, setValueT] = useState<string>('')
   const [isHovered, setIsHovered] = useState<boolean>(false)
   const [method, setMethod] = useState<HttpMethod>('GET')
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-
-  
 
   const setColor = (node: HttpMethod) => {
     switch (node) {
@@ -43,67 +49,35 @@ const UrlBar = () => {
   }
   return (
     <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
-      <div className="relative shrink-0">
-        {/* Trigger */}
-        <button
-          type="button"
-          className="flex h-8 items-center gap-1 rounded-md px-1.5 text-white hover:bg-white/7 sm:px-2  "
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setIsOpen(!isOpen)
-          }}
-        >
-          <span className={`${setColor(method)}`}>{method}</span>
-
-          <HugeiconsIcon icon={UnfoldMoreDownIcon} size={14} />
-        </button>
-
-        {/* Dropdown */}
-        {isOpen && (
-          <div className="bg-lgray absolute top-full left-0 z-50 mt-1 w-32 rounded-xl border border-white/10 p-1 shadow-md">
-            {(
-              [
-                'GET',
-                'POST',
-                'PUT',
-                'PATCH',
-                'DELETE',
-                'HEAD',
-                'OPTIONS',
-              ] as HttpMethod[]
-            ).map((m) => (
-              <button
-                key={m}
-                type="button"
-                className={cn(
-                  'w-full rounded px-2 py-1.5 text-left text-sm text-white hover:bg-white/10',
-                  `${setColor(m)}`,
-                )}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setMethod(m)
-                  setIsOpen(false)
-                }}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <Dropdown
+        label="HTTP method"
+        value={method}
+        placement="bottom"
+        options={methodArr.map((m) => ({
+          value: m,
+          label: m,
+          className: setColor(m),
+        }))}
+        onSelect={setMethod}
+        triggerClassName={cn('font-mono', setColor(method))}
+        menuClassName="font-mono"
+        optionClassName="block"
+        renderOption={(option) => option.label}
+      />
 
       {/* {"Input"} */}
       <div id="input" className="mx-1 h-6 w-full min-w-0 flex-1 sm:mx-2">
         <input
           type="text"
-          className="h-full w-full min-w-0 text-[16px] tracking-wider text-blue-500 placeholder:text-white/30 hover:cursor-default focus:outline-none"
+          aria-label="Request URL"
+          className="h-full w-full min-w-0 text-[16px] tracking-wider text-blue-500 placeholder:text-white/50 hover:cursor-default focus:outline-none"
           value={valueT}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setValueT(e.target.value)
           }
-          placeholder={isHovered ? 'Enter a URL' : 'Hey Thanks For Using Pia ❤️'}
+          placeholder={
+            isHovered ? 'Enter a URL' : 'Hey Thanks For Using Pia ❤️'
+          }
           onMouseOver={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         />
@@ -111,7 +85,8 @@ const UrlBar = () => {
 
       <button
         id="send"
-        className="flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-3 text-sm text-white hover:cursor-pointer sm:px-4 sm:text-md"
+        type="button"
+        className="sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-3 text-sm text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4"
       >
         Send
       </button>
