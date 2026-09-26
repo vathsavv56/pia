@@ -28,41 +28,40 @@ const HeadersList = ({ headersList }: HeadersListProps) => {
     try {
       displayHeaders =
         typeof headersList === 'string' ? JSON.parse(headersList) : headersList
-    } catch (e) {
-      displayHeaders = { Error: 'Invalid headers format' }
+    } catch (e: unknown) {
+      displayHeaders = {
+        Error: e instanceof Error ? e.message : 'Invalid headers format',
+      }
     }
   }
 
   return (
     <div className="mb-4">
-      <div className="mb-2 flex items-center gap-2">
-        <div
-          className="flex size-6 items-center justify-center rounded-md hover:cursor-pointer hover:bg-white/10"
-          onClick={() => setToggle((prev) => !prev)}
-        >
+      <button
+        type="button"
+        aria-expanded={toggle}
+        className="mb-2 flex items-center gap-2 text-white/80"
+        onClick={() => setToggle((prev) => !prev)}
+      >
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-md hover:bg-white/10">
           <HugeiconsIcon
             icon={ArrowDown01Icon}
             className={`text-white/60 transition-transform duration-300 ${toggle ? 'rotate-0' : '-rotate-90'}`}
           />
-        </div>
-        <span
-          className="cursor-pointer text-sm font-medium text-white/80 select-none"
-          onClick={() => setToggle((prev) => !prev)}
-        >
-          Headers
         </span>
-      </div>
+        <span className="text-sm font-medium select-none">Headers</span>
+      </button>
 
       {toggle && (
         <div className="mr-2 ml-8 rounded-md border border-white/5 bg-lgray p-3">
-          <table className="w-full text-left font-mono text-sm">
+          <table className="w-full table-fixed text-left font-mono text-xs sm:text-sm">
             <tbody>
               {Object.entries(displayHeaders).map(([key, value]) => (
                 <tr
                   key={key}
                   className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/5"
                 >
-                  <td className="w-[30%] py-1.5 pr-4 align-top font-medium whitespace-nowrap text-blue-500">
+                  <td className="w-[30%] py-1.5 pr-4 align-top font-medium break-all text-blue-500">
                     {key}
                   </td>
                   <td className="py-1.5 align-top break-all text-green-500">
@@ -92,24 +91,26 @@ const Response = ({
   if (typeof jsonData === 'string') {
     try {
       parsedData = jsonData ? JSON.parse(jsonData) : {}
-    } catch (e) {
+    } catch {
       parsedData = { data: jsonData }
     }
   }
 
   return (
-    <div className="bg-lgray h-full w-[50%] overflow-auto rounded-md p-5">
+    <section className="bg-lgray flex min-h-[18rem] w-full flex-col overflow-y-auto rounded-md p-3 sm:p-5 lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0">
       <HeadersList />
-      <JsonView
-        value={parsedData as object}
-        style={{
-          ...githubDarkTheme,
-          backgroundColor: 'transparent',
-          fontSize: '14px',
-          lineHeight: '2',
-        }}
-      />
-    </div>
+      <div className="min-w-0">
+        <JsonView
+          value={parsedData as object}
+          style={{
+            ...githubDarkTheme,
+            backgroundColor: 'transparent',
+            fontSize: '14px',
+            lineHeight: '2',
+          }}
+        />
+      </div>
+    </section>
   )
 }
 

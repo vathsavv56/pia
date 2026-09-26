@@ -99,7 +99,7 @@ const Auth = () => {
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 scrollbar-none p-1">
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none p-1">
         {auth.type === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/30 select-none">
@@ -181,7 +181,7 @@ const Auth = () => {
         )}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between border-t border-white/5 px-2 py-1.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-1 border-t border-white/5 px-2 py-1.5">
         <div ref={dropdownRef} className="relative">
           <button
             type="button"
@@ -228,7 +228,7 @@ const Auth = () => {
         </div>
 
         {auth.type === 'API Key' ? (
-          <div className="flex items-center gap-0.5 rounded-md bg-white/5 p-0.5">
+          <div className="flex shrink-0 items-center gap-0.5 rounded-md bg-white/5 p-0.5">
             {apiKeyLocationArr.map((item) => (
               <button
                 key={item}

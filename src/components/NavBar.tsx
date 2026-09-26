@@ -15,41 +15,59 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
     <nav
       id="left-nav"
       className={cn(
-        'border-lgray flex h-full w-[2.5%] flex-col items-center justify-between border p-2',
+        'border-lgray flex h-full w-12 shrink-0 flex-col items-center justify-between border-r p-1.5 sm:w-14 sm:p-2 lg:w-16',
       )}
     >
       <div
-        id="one"
-        className="flex h-20 w-full flex-col items-center justify-around gap-2"
+        id="nav-top"
+        className="flex w-full flex-col items-center gap-2 pt-3 sm:pt-4"
       >
         <div
           id="logo"
-          className={cn('flex size-10 items-center justify-center')}
+          className={cn('flex size-9 items-center justify-center sm:size-10')}
         >
-          <img src={LOGO} alt="logo" className="w-8" />
+          <img src={LOGO} alt="logo" className="w-7 sm:w-8" />
         </div>
 
-        <div
+        <button
+          type="button"
           id="files"
+          aria-label="Toggle file explorer"
           className={cn(
-            'flex size-10 items-center justify-center rounded-lg hover:bg-white/10',
+            'flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10',
           )}
           onClick={() => setIsFileExpOpen((prev) => !prev)}
         >
-          <HugeiconsIcon icon={Folder01Icon} className="size-6 text-white" />
-        </div>
+          <HugeiconsIcon
+            icon={Folder01Icon}
+            className="size-5 text-white sm:size-6"
+          />
+        </button>
       </div>
 
       <div
-        id="two"
-        className="flex h-20 w-full flex-col items-center justify-around gap-2"
+        id="nav-bottom"
+        className="flex w-full flex-col items-center gap-2 pb-3 sm:pb-4"
       >
-        <div id="logo" className="flex size-10 items-center justify-center">
+        <button
+          type="button"
+          id="help"
+          aria-label="Help"
+          className="flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10"
+        >
           <HugeiconsIcon icon={HelpCircleIcon} fill="white" />
-        </div>
-        <div id="files" className="flex size-10 items-center justify-center">
-          <HugeiconsIcon icon={UserSquareIcon} className="text-white" />
-        </div>
+        </button>
+        <button
+          type="button"
+          id="account"
+          aria-label="Account"
+          className="flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10"
+        >
+          <HugeiconsIcon
+            icon={UserSquareIcon}
+            className="size-5 text-white sm:size-6"
+          />
+        </button>
       </div>
     </nav>
   )

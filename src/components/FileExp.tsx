@@ -6,6 +6,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useState } from 'react'
+import { cn } from '@/utils/cn'
 
 type File = {
   id: string
@@ -154,10 +155,10 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
   const [expand, setExpand] = useState(false)
 
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       <div
-        className="flex w-full cursor-pointer items-center py-1 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white"
-        style={{ paddingLeft: `${depth * 12 + 12}px`, paddingRight: '12px' }}
+        className="flex w-full min-w-0 cursor-pointer items-center py-1.5 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white"
+        style={{ paddingLeft: `${depth * 12 + 8}px`, paddingRight: '8px' }}
         onClick={() => {
           if (file.isFolder) setExpand((p) => !p)
         }}
@@ -199,7 +200,7 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
 
 const FileView = ({ list, depth = 0 }: { list: File[]; depth?: number }) => {
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full min-w-0 flex-col">
       {list.map((item) => (
         <Node key={item.id} file={item} depth={depth} />
       ))}
@@ -209,17 +210,22 @@ const FileView = ({ list, depth = 0 }: { list: File[]; depth?: number }) => {
 
 const FileExp = ({ fileExpIsOpen }: { fileExpIsOpen: boolean }) => {
   return (
-    <div
+    <aside
       id="files"
-      className={`bg-dgray border-r-lgray h-full min-w-[15%] overflow-y-auto border-r py-2 text-white ${fileExpIsOpen ? 'block' : 'hidden'}`}
+      aria-label="File explorer"
+      className={cn(
+        'bg-dgray border-lgray flex h-full w-64 shrink-0 flex-col overflow-y-auto overscroll-contain border-r py-2 text-white',
+        'absolute inset-y-0 left-12 z-40 shadow-2xl sm:left-14 lg:static lg:left-0 lg:z-auto lg:w-56 lg:shadow-none xl:w-72',
+        fileExpIsOpen ? 'flex' : 'hidden',
+      )}
     >
-      <div className='flex items-center gap-2'>
-       <HugeiconsIcon icon={IceCubesIcon} size={18}/>
-       <p className=''>vathsavv56</p>
+      <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
+        <HugeiconsIcon icon={IceCubesIcon} size={18} />
+        <p className="truncate text-sm">vathsavv56</p>
       </div>
 
       <FileView list={startData} />
-    </div>
+    </aside>
   )
 }
 

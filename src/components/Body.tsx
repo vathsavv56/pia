@@ -205,7 +205,7 @@ const Body = () => {
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 scrollbar-none">
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
         {body.mode === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/30 select-none">
@@ -303,7 +303,7 @@ const Body = () => {
         )}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between border-t border-white/5 px-2 py-1.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-1 border-t border-white/5 px-2 py-1.5">
         <div className="flex items-center gap-2">
           <div ref={dropdownRef} className="relative">
             <button
@@ -358,7 +358,7 @@ const Body = () => {
         </div>
 
         {body.mode === 'JSON' && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div
               className={cn(
                 'flex items-center gap-1 text-xs',

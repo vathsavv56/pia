@@ -26,7 +26,7 @@ export const FileNode = ({ method, name, onDelete }: FileNodeProps) => {
       </div>
 
       {/* Name */}
-      <span className="max-w-32 min-w-0 truncate px-1 text-sm text-white">
+      <span className="max-w-24 min-w-0 truncate px-1 text-sm text-white sm:max-w-32">
         {name}
       </span>
 
@@ -86,7 +86,7 @@ const PageList = () => {
   }
 
   return (
-    <div className="mt-2 ml-2 flex h-10 w-[calc(100%-0.5rem)] items-center gap-2 overflow-x-auto">
+    <div className="scrollbar-none mt-1 ml-2 flex h-9 w-[calc(100%-0.5rem)] shrink-0 items-center gap-2 overflow-x-auto sm:mt-2 sm:h-10">
       {pageArr.map((node, index) => (
         <FileNode
           method={node.method}

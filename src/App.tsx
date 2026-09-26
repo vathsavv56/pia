@@ -2,8 +2,6 @@
 import Client from "@/components/Client"
 import  MainContainer from "@/MainContainer"
 import { createBrowserRouter , RouterProvider} from "react-router"
-import { QueryClientProvider } from "@tanstack/react-query"
-
 
 const router = createBrowserRouter([
   {

@@ -9,7 +9,7 @@ import { useRequestStore } from '@/context/requestStore'
 import type { ListKey } from '@/context/Keyvalue'
 
 const inputStyles =
-  'focus:outline-none w-full min-w-0 rounded-md px-2 py-2 focus:ring-1 focus:ring-blue-500 placeholder:text-white/40 hover:cursor-default bg-transparent'
+  'focus:outline-none w-full min-w-0 rounded-md px-1.5 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 placeholder:text-white/40 hover:cursor-default bg-transparent sm:px-2 sm:py-2'
 
 const KeyValueList = ({ list }: { list: ListKey }) => {
   const rows = useRequestStore((s) => s[list])
@@ -23,7 +23,7 @@ const KeyValueList = ({ list }: { list: ListKey }) => {
         {rows.map((row) => (
           <div
             key={row.id}
-            className="group grid w-full grid-cols-[auto_1fr_1fr_auto] items-center gap-2 rounded-md px-1 hover:bg-white/7"
+            className="group grid w-full grid-cols-[auto_1fr_1fr_auto] items-center gap-1 rounded-md px-0.5 hover:bg-white/7 sm:gap-2 sm:px-1"
           >
             <button
               type="button"

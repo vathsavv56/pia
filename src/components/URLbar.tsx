@@ -42,12 +42,12 @@ const UrlBar = () => {
     }
   }
   return (
-    <div className="bg-lgray mx-2 flex h-15 w-[calc(100%-1rem)] items-center justify-evenly rounded-md px-2">
-      <div className="relative">
+    <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
+      <div className="relative shrink-0">
         {/* Trigger */}
         <button
           type="button"
-          className="flex h-8 items-center gap-1 rounded-md px-2 text-white hover:bg-white/7  "
+          className="flex h-8 items-center gap-1 rounded-md px-1.5 text-white hover:bg-white/7 sm:px-2  "
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -95,10 +95,10 @@ const UrlBar = () => {
       </div>
 
       {/* {"Input"} */}
-      <div id="input" className="mx-2 h-6 w-full">
+      <div id="input" className="mx-1 h-6 w-full min-w-0 flex-1 sm:mx-2">
         <input
           type="text"
-          className="h-full w-full text-[16px] tracking-wider text-blue-500 placeholder:text-white/30 hover:cursor-default focus:outline-none"
+          className="h-full w-full min-w-0 text-[16px] tracking-wider text-blue-500 placeholder:text-white/30 hover:cursor-default focus:outline-none"
           value={valueT}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setValueT(e.target.value)
@@ -111,7 +111,7 @@ const UrlBar = () => {
 
       <button
         id="send"
-        className="text-md flex h-8 w-fit items-center justify-center rounded-md bg-blue-500 px-4 py-2 text-white hover:cursor-pointer"
+        className="flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-3 text-sm text-white hover:cursor-pointer sm:px-4 sm:text-md"
       >
         Send
       </button>
