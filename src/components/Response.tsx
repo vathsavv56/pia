@@ -54,7 +54,7 @@ const HeadersList = ({ headersList }: HeadersListProps) => {
       </div>
 
       {toggle && (
-        <div className="mr-2 ml-8 rounded-md border border-white/5 bg-[#0d1117]/50 p-3">
+        <div className="mr-2 ml-8 rounded-md border border-white/5 bg-lgray p-3">
           <table className="w-full text-left font-mono text-sm">
             <tbody>
               {Object.entries(displayHeaders).map(([key, value]) => (

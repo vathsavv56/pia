@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Folder01Icon,
   HelpCircleIcon,
-  UserRoundCheckIcon,
   UserSquareIcon,
 } from '@hugeicons/core-free-icons'
 import LOGO from '@/assets/logo-favicon.svg'
