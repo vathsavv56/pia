@@ -12,9 +12,8 @@ import {
   UserAccountIcon,
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
-
-type AuthType = 'None' | 'Basic' | 'Bearer' | 'API Key'
-type ApiKeyLocation = 'Header' | 'Query Param'
+import { useRequestStore, freshAuth } from '@/context/requestStore'
+import type { AuthType, ApiKeyLocation } from '@/context/requestStore'
 
 const authTypeArr: AuthType[] = ['None', 'Basic', 'Bearer', 'API Key']
 const apiKeyLocationArr: ApiKeyLocation[] = ['Header', 'Query Param']
@@ -74,14 +73,9 @@ const Field = ({
 )
 
 const Auth = () => {
-  const [authType, setAuthType] = useState<AuthType>('None')
-  const [username, setUsername] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
+  const auth = useRequestStore((s) => s.auth)
+  const setAuth = useRequestStore((s) => s.setAuth)
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false)
-  const [token, setToken] = useState<string>('')
-  const [apiKeyName, setApiKeyName] = useState<string>('X-API-Key')
-  const [apiKeyValue, setApiKeyValue] = useState<string>('')
-  const [apiKeyLocation, setApiKeyLocation] = useState<ApiKeyLocation>('Header')
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -106,7 +100,7 @@ const Auth = () => {
   return (
     <div className="flex h-full w-full flex-col text-white">
       <div className="min-h-0 flex-1 scrollbar-none p-1">
-        {authType === 'None' && (
+        {auth.type === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/30 select-none">
               This request does not use authentication
@@ -114,19 +108,19 @@ const Auth = () => {
           </div>
         )}
 
-        {authType === 'Basic' && (
+        {auth.type === 'Basic' && (
           <div className="flex h-full w-full flex-col justify-start gap-2">
             <Field
               icon={UserAccountIcon}
-              value={username}
-              onChange={setUsername}
+              value={auth.username}
+              onChange={(username) => setAuth({ ...auth, username })}
               placeholder="Username"
               className="text-emerald-500"
             />
             <Field
               icon={LockIcon}
-              value={password}
-              onChange={setPassword}
+              value={auth.password}
+              onChange={(password) => setAuth({ ...auth, password })}
               placeholder="Password"
               type={isPasswordVisible ? 'text' : 'password'}
               className="text-yellow-500"
@@ -149,12 +143,12 @@ const Auth = () => {
           </div>
         )}
 
-        {authType === 'Bearer' && (
+        {auth.type === 'Bearer' && (
           <div className="flex h-full w-full flex-col justify-start gap-2">
             <Field
               icon={Ticket01Icon}
-              value={token}
-              onChange={setToken}
+              value={auth.token}
+              onChange={(token) => setAuth({ ...auth, token })}
               placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
               mono
               className="text-blue-500"
@@ -165,20 +159,20 @@ const Auth = () => {
           </div>
         )}
 
-        {authType === 'API Key' && (
+        {auth.type === 'API Key' && (
           <div className="flex h-full w-full flex-col justify-start gap-2">
             <Field
               icon={Key01Icon}
-              value={apiKeyName}
-              onChange={setApiKeyName}
+              value={auth.key}
+              onChange={(key) => setAuth({ ...auth, key })}
               placeholder="Key"
               mono
               className="text-emerald-500"
             />
             <Field
               icon={Key01Icon}
-              value={apiKeyValue}
-              onChange={setApiKeyValue}
+              value={auth.value}
+              onChange={(value) => setAuth({ ...auth, value })}
               placeholder="Value"
               mono
               className="text-yellow-500"
@@ -196,8 +190,8 @@ const Auth = () => {
             className="flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white hover:bg-white/7"
             onClick={() => setIsOpen((prev) => !prev)}
           >
-            <HugeiconsIcon icon={authIcon[authType]} size={13} />
-            <span>{authType}</span>
+            <HugeiconsIcon icon={authIcon[auth.type]} size={13} />
+            <span>{auth.type}</span>
             <HugeiconsIcon icon={UnfoldMoreDownIcon} size={14} />
           </button>
 
@@ -211,13 +205,13 @@ const Auth = () => {
                   key={item}
                   type="button"
                   role="option"
-                  aria-selected={authType === item}
+                  aria-selected={auth.type === item}
                   className={cn(
                     'flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left font-mono text-sm text-white hover:bg-white/10',
-                    authType === item && 'bg-white/10',
+                    auth.type === item && 'bg-white/10',
                   )}
                   onClick={() => {
-                    setAuthType(item)
+                    setAuth(freshAuth(item))
                     setIsOpen(false)
                   }}
                 >
@@ -233,29 +227,29 @@ const Auth = () => {
           )}
         </div>
 
-        {authType === 'API Key' ? (
+        {auth.type === 'API Key' ? (
           <div className="flex items-center gap-0.5 rounded-md bg-white/5 p-0.5">
             {apiKeyLocationArr.map((item) => (
               <button
                 key={item}
                 type="button"
-                aria-pressed={apiKeyLocation === item}
+                aria-pressed={auth.location === item}
                 className={cn(
                   'rounded px-2 py-1 font-mono text-xs text-white/50 hover:bg-white/5',
-                  apiKeyLocation === item && 'bg-white/10 text-white',
+                  auth.location === item && 'bg-white/10 text-white',
                 )}
-                onClick={() => setApiKeyLocation(item)}
+                onClick={() => setAuth({ ...auth, location: item })}
               >
                 {item}
               </button>
             ))}
           </div>
         ) : (
-          authType !== 'None' && (
+          auth.type !== 'None' && (
             <span className="truncate font-mono text-xs text-white/30">
-              {authType === 'Basic'
+              {auth.type === 'Basic'
                 ? 'Sent as an Authorization: Basic header'
-                : authType === 'Bearer' && token.trim() !== ''
+                : auth.type === 'Bearer' && auth.token.trim() !== ''
                   ? 'Authorization: Bearer ****'
                   : 'Authorization: Bearer'}
             </span>

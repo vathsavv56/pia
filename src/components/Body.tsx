@@ -11,8 +11,8 @@ import {
   UnfoldMoreDownIcon,
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
-
-type BodyMode = 'None' | 'Text' | 'JSON' | 'File'
+import { useRequestStore, freshBody } from '@/context/requestStore'
+import type { BodyMode } from '@/context/requestStore'
 
 const bodyModeArr: BodyMode[] = ['None', 'Text', 'JSON', 'File']
 
@@ -123,10 +123,8 @@ const jsonKeyEdit = (
 }
 
 const Body = () => {
-  const [mode, setMode] = useState<BodyMode>('None')
-  const [text, setText] = useState<string>('')
-  const [json, setJson] = useState<string>('')
-  const [file, setFile] = useState<File | null>(null)
+  const body = useRequestStore((s) => s.body)
+  const setBody = useRequestStore((s) => s.setBody)
   const [tabMovesFocus, setTabMovesFocus] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -156,7 +154,7 @@ const Body = () => {
     if (!el) return
     el.value = value
     el.setSelectionRange(start, end)
-    setJson(value)
+    if (body.mode === 'JSON') setBody({ ...body, json: value })
   }
 
   const handleJsonKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -182,6 +180,10 @@ const Body = () => {
     applyEdit(edit)
   }
 
+  const json = body.mode === 'JSON' ? body.json : ''
+  const text = body.mode === 'Text' ? body.text : ''
+  const file = body.mode === 'File' ? body.file : null
+
   const isJsonValid = (() => {
     if (json.trim() === '') return true
     try {
@@ -193,8 +195,9 @@ const Body = () => {
   })()
 
   const formatJson = () => {
+    if (body.mode !== 'JSON') return
     try {
-      setJson(JSON.stringify(JSON.parse(json), null, 2))
+      setBody({ ...body, json: JSON.stringify(JSON.parse(json), null, 2) })
     } catch {
       return
     }
@@ -203,7 +206,7 @@ const Body = () => {
   return (
     <div className="flex h-full w-full flex-col text-white">
       <div className="min-h-0 flex-1 scrollbar-none">
-        {mode === 'None' && (
+        {body.mode === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/30 select-none">
               This request does not send a body
@@ -211,12 +214,12 @@ const Body = () => {
           </div>
         )}
 
-        {mode === 'Text' && (
+        {body.mode === 'Text' && (
           <div className="h-full w-full px-1">
             <textarea
               value={text}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setText(e.target.value)
+                setBody({ ...body, text: e.target.value })
               }
               placeholder="Enter your text body"
               spellCheck={false}
@@ -228,13 +231,13 @@ const Body = () => {
           </div>
         )}
 
-        {mode === 'JSON' && (
+        {body.mode === 'JSON' && (
           <div className="h-full w-full px-1">
             <textarea
               ref={jsonRef}
               value={json}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setJson(e.target.value)
+                setBody({ ...body, json: e.target.value })
               }
               onKeyDown={handleJsonKeyDown}
               onBlur={() => setTabMovesFocus(false)}
@@ -248,14 +251,14 @@ const Body = () => {
           </div>
         )}
 
-        {mode === 'File' && (
+        {body.mode === 'File' && (
           <div className="flex h-full w-full flex-col px-1">
             <input
               ref={fileInputRef}
               type="file"
               className="hidden"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFile(e.target.files?.[0] ?? null)
+                setBody({ ...body, file: e.target.files?.[0] ?? null })
               }
             />
 
@@ -289,7 +292,7 @@ const Body = () => {
                 <button
                   type="button"
                   aria-label={`Remove ${file.name}`}
-                  onClick={() => setFile(null)}
+                  onClick={() => setBody({ ...body, file: null })}
                   className="flex size-6 shrink-0 items-center justify-center rounded-sm text-gray-500 transition-all hover:bg-white/10 hover:text-white"
                 >
                   <HugeiconsIcon icon={Cancel01Icon} size={14} />
@@ -310,8 +313,8 @@ const Body = () => {
               className="flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white hover:bg-white/7"
               onClick={() => setIsOpen((prev) => !prev)}
             >
-              <HugeiconsIcon icon={modeIcon[mode]} size={13} />
-              <span>{mode}</span>
+              <HugeiconsIcon icon={modeIcon[body.mode]} size={13} />
+              <span>{body.mode}</span>
               <HugeiconsIcon icon={UnfoldMoreDownIcon} size={14} />
             </button>
 
@@ -325,13 +328,13 @@ const Body = () => {
                     key={item}
                     type="button"
                     role="option"
-                    aria-selected={mode === item}
+                    aria-selected={body.mode === item}
                     className={cn(
                       'flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left font-mono text-sm text-white hover:bg-white/10',
-                      mode === item && 'bg-white/10',
+                      body.mode === item && 'bg-white/10',
                     )}
                     onClick={() => {
-                      setMode(item)
+                      setBody(freshBody(item))
                       setIsOpen(false)
                     }}
                   >
@@ -354,7 +357,7 @@ const Body = () => {
           )}
         </div>
 
-        {mode === 'JSON' && (
+        {body.mode === 'JSON' && (
           <div className="flex items-center gap-2">
             <div
               className={cn(
