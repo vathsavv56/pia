@@ -10,8 +10,10 @@ import type {
   RequestBody,
   RequestDraft,
 } from '@/types/request.type'
-import { freshDraft, newRow, repairDraft, withTrailingBlank } from './Keyvalue'
+import { freshDraft, newRow, withTrailingBlank } from './Keyvalue'
 import { collectRequests, insertNode, mapNode, removeNode } from '@/utils/tree'
+import { reconcileCollection, toPersisted } from './reconcile'
+import type { PersistedCollection } from './reconcile'
 
 /* -------------------------------------------------------------------------- */
 /*                              Node factories                                */
@@ -31,7 +33,27 @@ const newRequest = (id: string, name: string): FileNode => ({
   draft: freshDraft(),
 })
 
-const startNodes = (): FileNode[] => [newFolder(nanoid(8), 'My Collection')]
+/**
+ * A fresh install has nothing to edit, and every draft edit is a no-op without
+ * an open request. So we hand the user one request, already open, rather than
+ * an editor that silently ignores typing.
+ *
+ * This is the *initial* state only. It must never be re-applied over saved
+ * data, or the whole collection would be wiped on every load.
+ */
+const startCollection = (): Pick<
+  CollectionStoreType,
+  'nodes' | 'openIds' | 'activeId'
+> => {
+  const requestId = nanoid(8)
+  const root = newFolder(nanoid(8), 'My Collection')
+
+  return {
+    nodes: [{ ...root, child: [newRequest(requestId, 'Request-1')] }],
+    openIds: [requestId],
+    activeId: requestId,
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                   Store                                    */
@@ -78,15 +100,15 @@ export const useCollectionStore = create<CollectionStoreType>()(
           if (state.activeId === null) return state
           return {
             nodes: mapNode(state.nodes, state.activeId, (node) =>
-              node.draft ? { ...node, draft: edit(node.draft) } : node,
+              node.isFolder
+                ? node
+                : { ...node, draft: edit(node.draft ?? freshDraft()) },
             ),
           }
         })
 
       return {
-        nodes: startNodes(),
-        openIds: [],
-        activeId: null,
+        ...startCollection(),
 
         setMethod: (method) => editActive((draft) => ({ ...draft, method })),
         setUrl: (url) => editActive((draft) => ({ ...draft, url })),
@@ -132,6 +154,17 @@ export const useCollectionStore = create<CollectionStoreType>()(
                 ? newFolder(id, 'New Folder')
                 : newRequest(id, 'New Request'),
             ),
+            // A new folder just appears. A new request also becomes the open
+            // one, otherwise nothing is being edited and the URL bar and Send
+            // button stay inert until the user clicks the node themselves.
+            ...(isFolder
+              ? {}
+              : {
+                  openIds: state.openIds.includes(id)
+                    ? state.openIds
+                    : [...state.openIds, id],
+                  activeId: id,
+                }),
           }))
           return id
         },
@@ -189,46 +222,19 @@ export const useCollectionStore = create<CollectionStoreType>()(
        * Only the tree and the tabs are stored. A picked `File` cannot be
        * written to localStorage, so we drop it and let the user pick again.
        */
-      partialize: (state) => ({
-        nodes: state.nodes.map((node) => stripFiles(node)),
-        openIds: state.openIds,
-        activeId: state.activeId,
-      }),
+      partialize: (state) => toPersisted(state),
       merge: (persisted, current) => {
-        const saved = persisted as Partial<CollectionStoreType> | undefined
-        const nodes = (saved?.nodes ?? []).map((node) => repairNode(node))
-        return {
-          ...current,
-          nodes: nodes.length > 0 ? nodes : current.nodes,
-          openIds: (saved?.openIds ?? []).filter((id) =>
-            collectRequests(nodes).some((node) => node.id === id),
-          ),
-          activeId: saved?.activeId ?? null,
+        const saved = persisted as Partial<PersistedCollection> | undefined
+        const fallback = {
+          nodes: current.nodes,
+          openIds: current.openIds,
+          activeId: current.activeId,
         }
+        return { ...current, ...reconcileCollection(saved, fallback) }
       },
     },
   ),
 )
-
-/* -------------------------------------------------------------------------- */
-/*                            Persistence helpers                             */
-/* -------------------------------------------------------------------------- */
-
-const stripFiles = (node: FileNode): FileNode => ({
-  ...node,
-  child: node.child?.map(stripFiles),
-  draft:
-    node.draft && node.draft.body.mode === 'File'
-      ? { ...node.draft, body: { mode: 'File', file: null } }
-      : node.draft,
-})
-
-/** Fills in anything an older saved version of the app did not have. */
-const repairNode = (node: FileNode): FileNode => ({
-  ...node,
-  child: node.child?.map(repairNode),
-  draft: node.draft ? repairDraft(node.draft) : undefined,
-})
 
 /* -------------------------------------------------------------------------- */
 /*                                 Selectors                                  */

@@ -53,6 +53,8 @@ const NavBar = ({ toggleFileExp }: NavBarProps) => {
           type="button"
           id="help"
           aria-label="Help"
+          disabled
+          title="Not built yet"
           className="flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10"
         >
           <HugeiconsIcon
@@ -64,11 +66,13 @@ const NavBar = ({ toggleFileExp }: NavBarProps) => {
           type="button"
           id="account"
           aria-label="Account"
+          disabled
+          title="Not built yet"
           className="flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10"
         >
           <HugeiconsIcon
             icon={UserSquareIcon}
-            className="size-5 text-white sm:size-6"
+            className="size-5 text-white/40 sm:size-6"
           />
         </button>
       </div>

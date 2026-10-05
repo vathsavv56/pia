@@ -25,6 +25,7 @@ type DropdownProps<T extends string> = {
   menuClassName?: string
   optionClassName?: string
   renderOption?: (option: DropdownOption<T>) => React.ReactNode
+  disabled?: boolean
 }
 
 const Dropdown = <T extends string>({
@@ -38,6 +39,7 @@ const Dropdown = <T extends string>({
   menuClassName,
   optionClassName,
   renderOption,
+  disabled = false,
 }: DropdownProps<T>) => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [activeValue, setActiveValue] = useState<T>(value)
@@ -77,12 +79,13 @@ const Dropdown = <T extends string>({
   }, [isOpen])
 
   const open = () => {
+    if (disabled) return
     setActiveValue(value)
     setIsOpen(true)
   }
 
   const step = (delta: number) => {
-    if (options.length === 0) return
+    if (disabled || options.length === 0) return
     const current = options.findIndex((option) => option.value === activeValue)
     const next = (current + delta + options.length) % options.length
     const option = options[next]
@@ -90,6 +93,7 @@ const Dropdown = <T extends string>({
   }
 
   const commit = (next: T) => {
+    if (disabled) return
     onSelect(next)
     setIsOpen(false)
     triggerRef.current?.focus()
@@ -136,8 +140,12 @@ const Dropdown = <T extends string>({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-controls={isOpen ? menuId : undefined}
+        disabled={disabled}
         className={cn(
-          'flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white hover:bg-white/7 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none',
+          'flex h-8 items-center gap-1 rounded-md px-2 font-mono text-sm text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none',
+          disabled
+            ? 'cursor-not-allowed text-white/50'
+            : 'cursor-pointer hover:bg-white/7',
           triggerClassName,
         )}
         onClick={() => (isOpen ? setIsOpen(false) : open())}

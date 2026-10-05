@@ -79,12 +79,16 @@ const toApiResponse = (res: AxiosResponse, startedAt: number): ApiResponse => {
   const raw = textOf(res.data)
   const { payloadKind, data } = readPayload(raw, headers['content-type'] ?? '')
 
+  // In proxy mode res.config.url is the proxy's own address. The proxy tells
+  // us the URL it actually reached, which is the one worth showing.
+  const finalUrl = headers['x-proxy-final-url'] ?? String(res.config.url ?? '')
+
   return {
     status: res.status,
     statusText: res.statusText ?? '',
     kind: statusKind(res.status),
     ok: res.status >= 200 && res.status < 300,
-    url: String(res.config.url ?? ''),
+    url: finalUrl,
     headers,
     payloadKind,
     raw,

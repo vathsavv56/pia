@@ -21,6 +21,7 @@ import {
 } from '@/types/response.type'
 import { toApiResponse } from '@/api/api'
 import type { FileNode } from '@/types/collection.type'
+import { reconcileCollection } from '@/context/reconcile'
 
 let pass = 0,
   fail = 0
@@ -166,6 +167,127 @@ check(
 )
 check('siblingsOf finds the parent list', siblingsOf(tree, 'r1').length === 1)
 
+console.log('\n-- buttons have handlers --')
+
+/**
+ * A button with no handler does nothing and looks fine: it typechecks, it lints,
+ * it builds. That is exactly how a broken Send button shipped once already.
+ * This scans the opening tag of every <button> in our components.
+ */
+const componentDir = './src/components'
+const buttonFiles = [...new Bun.Glob('*.tsx').scanSync({ cwd: componentDir })]
+
+// Fail loudly if the scan found nothing, otherwise this passes vacuously and
+// protects nothing.
+check(
+  'the button scan actually found components',
+  buttonFiles.length > 0,
+  buttonFiles.length,
+)
+
+const deadButtons: string[] = []
+
+for (const file of buttonFiles) {
+  const source = await Bun.file(`${componentDir}/${file}`).text()
+  for (const match of source.matchAll(/<button\b([^>]*)>/g)) {
+    const attrs = match[1] ?? ''
+    // A disabled button is inert on purpose, so it is not a missing handler.
+    const hasHandler =
+      attrs.includes('onClick') ||
+      attrs.includes('onSubmit') ||
+      attrs.includes('onMouseDown') ||
+      attrs.includes('onPointerDown') ||
+      attrs.includes('disabled')
+    if (!hasHandler) deadButtons.push(`${file}: ${attrs.trim().slice(0, 60)}`)
+  }
+}
+
+check('no <button> is missing a handler', deadButtons.length === 0, deadButtons)
+
+console.log('\n-- saved collection (the two bugs that were reported) --')
+
+const mkReq = (id: string, name: string): FileNode => ({
+  id,
+  name,
+  isFolder: false,
+  draft: freshDraft(),
+})
+const mkTree = (kids: FileNode[]): FileNode[] => [
+  { id: 'f1', name: 'My Collection', isFolder: true, child: kids },
+]
+
+// Bug 1: an earlier version re-seeded when storage was empty, wiping the tree.
+const savedTree = mkTree([mkReq('r1', 'Keep me'), mkReq('r2', 'Keep me too')])
+const fallback = {
+  nodes: mkTree([mkReq('seed', 'Seeded')]),
+  openIds: ['seed'],
+  activeId: 'seed',
+}
+const kept = reconcileCollection(
+  { nodes: savedTree, openIds: ['r1'], activeId: 'r1' },
+  fallback,
+)
+check(
+  'saved nodes are never replaced',
+  kept.nodes[0]?.child?.length === 2,
+  kept.nodes,
+)
+check('saved names survive', kept.nodes[0]?.child?.[1]?.name === 'Keep me too')
+check('active request is kept', kept.activeId === 'r1')
+
+// Bug 2: an earlier version restored activeId: null, which made every draft
+// edit a no-op, so the URL bar and Send button did nothing.
+const stale = reconcileCollection(
+  { nodes: savedTree, openIds: [], activeId: null },
+  fallback,
+)
+check(
+  'null activeId opens a request instead',
+  stale.activeId !== null,
+  stale.activeId,
+)
+check(
+  'that request is really in the tree',
+  stale.nodes[0]?.child?.some((n) => n.id === stale.activeId) === true,
+  stale.activeId,
+)
+check('it also becomes a tab', stale.openIds.includes(stale.activeId as string))
+
+const staleOpen = reconcileCollection(
+  { nodes: savedTree, openIds: ['r1'], activeId: null },
+  fallback,
+)
+check(
+  'existing tab is preferred over inventing one',
+  staleOpen.activeId === 'r1',
+)
+
+// A tab whose request was deleted must not linger.
+const gone = reconcileCollection(
+  { nodes: savedTree, openIds: ['r1', 'deleted'], activeId: 'deleted' },
+  fallback,
+)
+check('tab for a deleted request is dropped', !gone.openIds.includes('deleted'))
+check('activeId falls back to a real request', gone.activeId === 'r1')
+
+// First run: nothing saved, so the seeded collection is what you get.
+const first = reconcileCollection(undefined, fallback)
+check('first run keeps the seeded request', first.activeId === 'seed')
+check('first run keeps the seeded nodes', first.nodes === fallback.nodes)
+
+// Older saves missing fields entirely.
+const partial = reconcileCollection(
+  { nodes: mkTree([{ id: 'r9', name: 'Old', isFolder: false } as FileNode]) },
+  fallback,
+)
+check(
+  'a saved node missing a draft is repaired',
+  partial.nodes[0]?.child?.[0]?.draft?.method === 'GET',
+)
+check('missing openIds does not crash', Array.isArray(partial.openIds))
+check('still opens something', partial.activeId === 'r9')
+
+// A File body cannot be serialised, so it is dropped on the way out.
 console.log('\n-- response --')
 check('2xx -> success', statusKind(204) === 'success')
 check('3xx -> redirect', statusKind(302) === 'redirect')

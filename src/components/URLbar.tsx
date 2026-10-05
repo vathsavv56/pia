@@ -4,6 +4,7 @@ import {
   useDraftActions,
 } from '@/context/requestStore'
 import { useResponseStore } from '@/context/responseStore'
+import { useCollectionStore } from '@/context/collectionStore'
 import { httpMethodArr } from '@/types/request.type'
 import type { HttpMethod } from '@/types/request.type'
 import { cn } from '@/utils/cn'
@@ -33,6 +34,7 @@ const methodColor = (method: HttpMethod) => {
 }
 
 const UrlBar = () => {
+  const activeId = useCollectionStore((s) => s.activeId)
   const method = useDraft((draft) => draft.method)
   const url = useDraft((draft) => draft.url)
   const draft = useActiveDraft()
@@ -45,11 +47,16 @@ const UrlBar = () => {
 
   const handleSend = () => void send(draft)
 
+  // Every draft edit is a no-op without an open request, so rather than
+  // pretending to be editable, say so.
+  const isEditable = activeId !== null
+
   return (
     <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] min-w-0 items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
       <Dropdown
         label="HTTP method"
         value={method}
+        disabled={!isEditable}
         placement="bottom"
         options={httpMethodArr.map((m) => ({
           value: m,
@@ -68,7 +75,14 @@ const UrlBar = () => {
           type="text"
           aria-label="Request URL"
           spellCheck={false}
-          className="h-full w-full min-w-0 text-[16px] tracking-wider text-blue-500 placeholder:text-white/50 hover:cursor-default focus:outline-none"
+          readOnly={!isEditable}
+          aria-readonly={!isEditable}
+          title={
+            isEditable
+              ? undefined
+              : 'Open or create a request in the sidebar to edit this.'
+          }
+          className="h-full w-full min-w-0 text-[16px] tracking-wider text-blue-500 placeholder:text-white/50 read-only:cursor-not-allowed read-only:text-white/40 hover:cursor-default focus:outline-none"
           value={url}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setUrl(e.target.value)
@@ -98,7 +112,13 @@ const UrlBar = () => {
         <button
           id="send"
           type="button"
-          className="sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-3 text-sm text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4"
+          disabled={!isEditable}
+          className={cn(
+            'sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md px-3 text-sm text-white focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4',
+            isEditable
+              ? 'bg-blue-500 hover:cursor-pointer'
+              : 'cursor-not-allowed bg-white/15 text-white/50',
+          )}
           onClick={handleSend}
         >
           Send

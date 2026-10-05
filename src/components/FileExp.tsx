@@ -36,8 +36,11 @@ const ActionButton = ({ label, icon, onClick }: ActionButtonProps) => (
     tabIndex={-1}
     className="flex size-5 shrink-0 items-center justify-center rounded-sm text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
     onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-      // Row click handles folders, these are their own buttons.
+      // Both are needed. stopPropagation stops the React handlers above us,
+      // but a button nested in an <a> still runs the browser's default action,
+      // which is a full page navigation — that is what was reloading the app.
       e.stopPropagation()
+      e.preventDefault()
       onClick()
     }}
   >
@@ -54,6 +57,15 @@ interface RenameInputProps {
 const RenameInput = ({ initial, onCommit, onCancel }: RenameInputProps) => {
   const [value, setValue] = useState<string>(initial)
   const ref = useRef<HTMLInputElement>(null)
+  // Enter and blur both fire on the way out. Only the first one counts.
+  const done = useRef(false)
+
+  const finish = (commit: boolean) => {
+    if (done.current) return
+    done.current = true
+    if (commit) onCommit(value)
+    else onCancel()
+  }
 
   useEffect(() => {
     ref.current?.focus()
@@ -71,10 +83,18 @@ const RenameInput = ({ initial, onCommit, onCancel }: RenameInputProps) => {
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
         setValue(e.target.value)
       }
-      onBlur={() => onCommit(value)}
+      onBlur={() => finish(true)}
       onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') onCommit(value)
-        if (e.key === 'Escape') onCancel()
+        // Never let these reach the row, which would toggle or navigate.
+        e.stopPropagation()
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          finish(true)
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          finish(false)
+        }
       }}
     />
   )
@@ -213,18 +233,20 @@ const Node = ({ node, depth }: NodeProps) => {
   if (node.isFolder) {
     return (
       <div className="w-full min-w-0" role="none">
-        <div
-          role="treeitem"
-          aria-level={depth + 1}
-          aria-expanded={expand}
-          tabIndex={0}
-          className={sharedClassName}
-          style={{ paddingLeft: `${depth * 12 + 8}px` }}
-          onClick={() => setExpand((prev) => !prev)}
-          onKeyDown={handleKeyDown}
-        >
-          {icon}
-          {label}
+        <div className="group flex w-full min-w-0 items-center rounded-sm">
+          <div
+            role="treeitem"
+            aria-level={depth + 1}
+            aria-expanded={expand}
+            tabIndex={0}
+            className={cn(sharedClassName, 'min-w-0 flex-1')}
+            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            onClick={() => setExpand((prev) => !prev)}
+            onKeyDown={handleKeyDown}
+          >
+            {icon}
+            <span className="truncate">{node.name}</span>
+          </div>
           {actions}
         </div>
 
@@ -241,25 +263,43 @@ const Node = ({ node, depth }: NodeProps) => {
 
   return (
     <div className="w-full min-w-0" role="none">
-      <NavLink
-        to={`/req/${node.id}`}
-        role="treeitem"
-        aria-level={depth + 1}
-        tabIndex={0}
-        className={({ isActive }) =>
-          cn(
-            sharedClassName,
-            isActive ? 'bg-white/10 text-white' : 'text-gray-300',
-          )
-        }
-        style={{ paddingLeft: `${depth * 12 + 8}px` }}
-        onClick={() => openTab(node.id)}
-        onKeyDown={handleKeyDown}
-      >
-        {icon}
-        {label}
-        {actions}
-      </NavLink>
+      {/* While renaming, the row must not be a link. A text input nested
+          inside an <a> is invalid markup, and the browser and the router
+          disagree about whether a click means "focus this" or "go there" —
+          which navigated away and lost the edit. */}
+      {isRenaming ? (
+        <div
+          role="treeitem"
+          aria-level={depth + 1}
+          className={cn(sharedClassName, 'cursor-default')}
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+        >
+          {icon}
+          {label}
+          {actions}
+        </div>
+      ) : (
+        <NavLink
+          to={`/req/${node.id}`}
+          role="treeitem"
+          aria-level={depth + 1}
+          tabIndex={0}
+          className={({ isActive }) =>
+            cn(
+              sharedClassName,
+              isActive ? 'bg-white/10 text-white' : 'text-gray-300',
+            )
+          }
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onClick={() => openTab(node.id)}
+          onKeyDown={handleKeyDown}
+        >
+          {icon}
+          {label}
+          {actions}
+        </NavLink>
+      )}
     </div>
   )
 }
