@@ -7,10 +7,10 @@ import {
 } from '@hugeicons/core-free-icons'
 import LOGO from '@/assets/logo-favicon.svg'
 interface NavBarProps {
-  setIsFileExpOpen: React.Dispatch<React.SetStateAction<boolean>>
+  toggleFileExp: () => void
 }
 
-const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
+const NavBar = ({ toggleFileExp }: NavBarProps) => {
   return (
     <nav
       id="left-nav"
@@ -31,12 +31,12 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
 
         <button
           type="button"
-          id="files"
+          id="file-exp-toggle"
           aria-label="Toggle file explorer"
           className={cn(
             'flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10',
           )}
-          onClick={() => setIsFileExpOpen((prev) => !prev)}
+          onClick={toggleFileExp}
         >
           <HugeiconsIcon
             icon={Folder01Icon}
@@ -55,7 +55,10 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
           aria-label="Help"
           className="flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10"
         >
-          <HugeiconsIcon icon={HelpCircleIcon} fill="white" />
+          <HugeiconsIcon
+            icon={HelpCircleIcon}
+            className="size-5 text-white sm:size-6"
+          />
         </button>
         <button
           type="button"

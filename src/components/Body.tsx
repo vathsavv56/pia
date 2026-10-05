@@ -11,10 +11,9 @@ import {
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
 import Dropdown from '@/components/Dropdown'
-import { useRequestStore, freshBody } from '@/context/requestStore'
-import type { BodyMode } from '@/context/requestStore'
-
-const bodyModeArr: BodyMode[] = ['None', 'Text', 'JSON', 'File']
+import { freshBody, useDraft, useDraftActions } from '@/context/requestStore'
+import { bodyModeArr } from '@/types/request.type'
+import type { BodyMode } from '@/types/request.type'
 
 const modeIcon: Record<BodyMode, IconSvgElement> = {
   None: Cancel01Icon,
@@ -35,15 +34,15 @@ const formatBytes = (bytes: number) => {
 
 type Edit = { value: string; start: number; end: number }
 
+// Only JSON-legal characters get auto-paired. Parentheses and single quotes
+// would produce a document JSON.parse always rejects.
 const pairs: Record<string, string> = {
   '{': '}',
   '[': ']',
-  '(': ')',
   '"': '"',
-  "'": "'",
 }
 
-const closers = new Set(['}', ']', ')', '"', "'"])
+const closers = new Set(['}', ']', '"'])
 
 const jsonKeyEdit = (
   key: string,
@@ -123,8 +122,8 @@ const jsonKeyEdit = (
 }
 
 const Body = () => {
-  const body = useRequestStore((s) => s.body)
-  const setBody = useRequestStore((s) => s.setBody)
+  const body = useDraft((draft) => draft.body)
+  const { setBody } = useDraftActions()
   const [tabMovesFocus, setTabMovesFocus] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const jsonRef = useRef<HTMLTextAreaElement>(null)
@@ -146,6 +145,9 @@ const Body = () => {
       setTabMovesFocus(false)
       return
     }
+    // Alt/Meta+Tab moves focus and Ctrl/Cmd+Enter runs shortcuts. Leave both
+    // alone instead of turning them into stray spaces and braces.
+    if (e.altKey || e.metaKey || e.ctrlKey) return
 
     const el = e.currentTarget
     const edit = jsonKeyEdit(
@@ -275,7 +277,10 @@ const Body = () => {
                 <button
                   type="button"
                   aria-label={`Remove ${file.name}`}
-                  onClick={() => setBody({ ...body, file: null })}
+                  onClick={() => {
+                    setBody({ ...body, file: null })
+                    if (fileInputRef.current) fileInputRef.current.value = ''
+                  }}
                   className="flex size-6 shrink-0 items-center justify-center rounded-sm text-gray-500 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
                 >
                   <HugeiconsIcon icon={Cancel01Icon} size={14} />

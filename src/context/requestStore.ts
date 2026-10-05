@@ -1,102 +1,70 @@
-import { create } from 'zustand'
-import { newRow, withTrailingBlank } from './Keyvalue'
-import type { KeyValueRow, ListKey } from './Keyvalue'
+import { useCollectionStore } from './collectionStore'
+import { freshDraft } from './Keyvalue'
+import { findNode } from '@/utils/tree'
+import type {
+  Auth,
+  HttpMethod,
+  KeyValueRow,
+  ListKey,
+  RequestBody,
+  RequestDraft,
+} from '@/types/request.type'
 
-export type AuthType = 'None' | 'Basic' | 'Bearer' | 'API Key'
-export type ApiKeyLocation = 'Header' | 'Query Param'
-export type BodyMode = 'None' | 'Text' | 'JSON' | 'File'
+export { freshAuth, freshBody, newRow, withTrailingBlank } from './Keyvalue'
+export type { KeyValueRow, ListKey }
 
-export type Auth =
-  | { type: 'None' }
-  | { type: 'Basic'; username: string; password: string }
-  | { type: 'Bearer'; token: string }
-  | {
-      type: 'API Key'
-      key: string
-      value: string
-      location: ApiKeyLocation
-    }
+/**
+ * Shown while nothing is open, so the editor always has a valid shape to read
+ * instead of branching on `null` in every component.
+ */
+const EMPTY_DRAFT = freshDraft()
 
-export type RequestBody =
-  | { mode: 'None' }
-  | { mode: 'Text'; text: string }
-  | { mode: 'JSON'; json: string }
-  | { mode: 'File'; file: File | null }
+/**
+ * Reads one slice of the request being edited. The selector gets the draft, so
+ * components ask for exactly what they need: `useDraft((d) => d.params)`.
+ * The result is a stable reference, which is what keeps Zustand from
+ * re-rendering on unrelated changes.
+ */
+export const useDraft = <T>(selector: (draft: RequestDraft) => T): T =>
+  useCollectionStore((state) => {
+    if (state.activeId === null) return selector(EMPTY_DRAFT)
+    const node = findNode(state.nodes, state.activeId)
+    return selector(node?.draft ?? EMPTY_DRAFT)
+  })
 
-export const freshAuth = (type: AuthType): Auth => {
-  switch (type) {
-    case 'Basic':
-      return { type: 'Basic', username: '', password: '' }
-    case 'Bearer':
-      return { type: 'Bearer', token: '' }
-    case 'API Key':
-      return {
-        type: 'API Key',
-        key: 'X-API-Key',
-        value: '',
-        location: 'Header',
-      }
-    default:
-      return { type: 'None' }
-  }
-}
+/** The whole draft at once. Only for code that genuinely needs every field. */
+export const useActiveDraft = (): RequestDraft => useDraft((d) => d)
 
-export const freshBody = (mode: BodyMode): RequestBody => {
-  switch (mode) {
-    case 'Text':
-      return { mode: 'Text', text: '' }
-    case 'JSON':
-      return { mode: 'JSON', json: '' }
-    case 'File':
-      return { mode: 'File', file: null }
-    default:
-      return { mode: 'None' }
-  }
-}
-
-type RequestStoreType = {
-  params: KeyValueRow[]
-  headers: KeyValueRow[]
-  auth: Auth
-  body: RequestBody
+export type DraftActions = {
+  setMethod: (method: HttpMethod) => void
+  setUrl: (url: string) => void
+  setAuth: (auth: Auth) => void
+  setBody: (body: RequestBody) => void
   updateRow: (list: ListKey, id: string, patch: Partial<KeyValueRow>) => void
   toggleRow: (list: ListKey, id: string) => void
   removeRow: (list: ListKey, id: string) => void
   clearList: (list: ListKey) => void
-  setAuth: (auth: Auth) => void
-  setBody: (body: RequestBody) => void
 }
 
-export const useRequestStore = create<RequestStoreType>()((set) => ({
-  params: [newRow()],
-  headers: [newRow()],
-  auth: freshAuth('None'),
-  body: freshBody('None'),
+/** Every action the request editor needs, in one object. */
+export const useDraftActions = (): DraftActions => {
+  const setMethod = useCollectionStore((s) => s.setMethod)
+  const setUrl = useCollectionStore((s) => s.setUrl)
+  const setAuth = useCollectionStore((s) => s.setAuth)
+  const setBody = useCollectionStore((s) => s.setBody)
+  const updateRow = useCollectionStore((s) => s.updateRow)
+  const toggleRow = useCollectionStore((s) => s.toggleRow)
+  const removeRow = useCollectionStore((s) => s.removeRow)
+  const clearList = useCollectionStore((s) => s.clearList)
 
-  updateRow: (list, id, patch) =>
-    set((state) => {
-      const rows = state[list].map((row) =>
-        row.id === id ? { ...row, ...patch } : row,
-      )
-      return { [list]: withTrailingBlank(rows) } as Partial<RequestStoreType>
-    }),
-
-  toggleRow: (list, id) =>
-    set((state) => {
-      const rows = state[list].map((row) =>
-        row.id === id ? { ...row, isIncluded: !row.isIncluded } : row,
-      )
-      return { [list]: rows } as Partial<RequestStoreType>
-    }),
-
-  removeRow: (list, id) =>
-    set((state) => {
-      const rows = state[list].filter((row) => row.id !== id)
-      return { [list]: withTrailingBlank(rows) } as Partial<RequestStoreType>
-    }),
-
-  clearList: (list) => set({ [list]: [newRow()] } as Partial<RequestStoreType>),
-
-  setAuth: (auth) => set({ auth }),
-  setBody: (body) => set({ body }),
-}))
+  return {
+    setMethod,
+    setUrl,
+    setAuth,
+    setBody,
+    updateRow,
+    toggleRow,
+    removeRow,
+    clearList,
+  }
+}

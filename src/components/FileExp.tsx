@@ -1,155 +1,99 @@
 import {
+  AddCircleIcon,
   ArrowDown01Icon,
-  Folder01Icon,
+  Delete02Icon,
+  Edit02Icon,
   File02Icon,
-  IceCubesIcon,
+  Folder01Icon,
+  FolderPlusIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
+import { NavLink } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { useCollectionStore } from '@/context/collectionStore'
+import type { FileNode } from '@/types/collection.type'
 import { cn } from '@/utils/cn'
 
-type File = {
-  id: string
-  name: string
-  isFolder: boolean
-  child?: File[]
+/** Actions used by every row, collected once per row. */
+const useTreeActions = () => {
+  const addNode = useCollectionStore((s) => s.addNode)
+  const renameNode = useCollectionStore((s) => s.renameNode)
+  const removeTreeNode = useCollectionStore((s) => s.removeTreeNode)
+  const openTab = useCollectionStore((s) => s.openTab)
+  return { addNode, renameNode, removeTreeNode, openTab }
 }
 
-// const fakeFileArr: File[] = [
-//   {
-//     id: '1',
-//     name: 'my-vite-app',
-//     isFolder: true,
-//     child: [
-//       {
-//         id: '2',
-//         name: 'node_modules',
-//         isFolder: true,
-//         child: [],
-//       },
+interface ActionButtonProps {
+  label: string
+  icon: typeof Edit02Icon
+  onClick: () => void
+}
 
-//       {
-//         id: '3',
-//         name: 'public',
-//         isFolder: true,
-//         child: [
-//           {
-//             id: '4',
-//             name: 'vite.svg',
-//             isFolder: false,
-//           },
-//         ],
-//       },
+const ActionButton = ({ label, icon, onClick }: ActionButtonProps) => (
+  <button
+    type="button"
+    aria-label={label}
+    tabIndex={-1}
+    className="flex size-5 shrink-0 items-center justify-center rounded-sm text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
+    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+      // Row click handles folders, these are their own buttons.
+      e.stopPropagation()
+      onClick()
+    }}
+  >
+    <HugeiconsIcon icon={icon} size={13} aria-hidden />
+  </button>
+)
 
-//       {
-//         id: '5',
-//         name: 'src',
-//         isFolder: true,
-//         child: [
-//           {
-//             id: '6',
-//             name: 'assets',
-//             isFolder: true,
-//             child: [
-//               {
-//                 id: '7',
-//                 name: 'react.svg',
-//                 isFolder: false,
-//               },
-//             ],
-//           },
+interface RenameInputProps {
+  initial: string
+  onCommit: (name: string) => void
+  onCancel: () => void
+}
 
-//           {
-//             id: '8',
-//             name: 'App.css',
-//             isFolder: false,
-//           },
+const RenameInput = ({ initial, onCommit, onCancel }: RenameInputProps) => {
+  const [value, setValue] = useState<string>(initial)
+  const ref = useRef<HTMLInputElement>(null)
 
-//           {
-//             id: '9',
-//             name: 'App.tsx',
-//             isFolder: false,
-//           },
+  useEffect(() => {
+    ref.current?.focus()
+    ref.current?.select()
+  }, [])
 
-//           {
-//             id: '10',
-//             name: 'index.css',
-//             isFolder: false,
-//           },
+  return (
+    <input
+      ref={ref}
+      type="text"
+      aria-label="Node name"
+      spellCheck={false}
+      className="min-w-0 flex-1 rounded-sm bg-white/10 px-1 py-0.5 text-sm text-white focus:outline-none"
+      value={value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        setValue(e.target.value)
+      }
+      onBlur={() => onCommit(value)}
+      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') onCommit(value)
+        if (e.key === 'Escape') onCancel()
+      }}
+    />
+  )
+}
 
-//           {
-//             id: '11',
-//             name: 'main.tsx',
-//             isFolder: false,
-//           },
-//         ],
-//       },
+interface NodeProps {
+  node: FileNode
+  depth: number
+}
 
-//       {
-//         id: '12',
-//         name: '.gitignore',
-//         isFolder: false,
-//       },
+const Node = ({ node, depth }: NodeProps) => {
+  const [expand, setExpand] = useState<boolean>(false)
+  const [isRenaming, setIsRenaming] = useState<boolean>(false)
+  const { addNode, renameNode, removeTreeNode, openTab } = useTreeActions()
 
-//       {
-//         id: '13',
-//         name: 'eslint.config.js',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '14',
-//         name: 'index.html',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '15',
-//         name: 'package.json',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '16',
-//         name: 'tsconfig.app.json',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '17',
-//         name: 'tsconfig.json',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '18',
-//         name: 'tsconfig.node.json',
-//         isFolder: false,
-//       },
-
-//       {
-//         id: '19',
-//         name: 'vite.config.ts',
-//         isFolder: false,
-//       },
-//     ],
-//   },
-// ]
-
-const startData: File[] = [
-  {
-    id: '1',
-    name: 'vathsavv56-folder',
-    isFolder: true,
-    child: [{ id: '2', name: 'Request-1', isFolder: false }],
-  },
-]
-const Node = ({ file, depth }: { file: File; depth: number }) => {
-  const [expand, setExpand] = useState(false)
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (isRenaming) return
     const items = Array.from(
-      document.querySelectorAll<HTMLElement>('#files [role="treeitem"]'),
+      document.querySelectorAll<HTMLElement>('#file-tree [role="treeitem"]'),
     )
     const index = items.indexOf(e.currentTarget)
 
@@ -163,13 +107,13 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
         items[index - 1]?.focus()
         break
       case 'ArrowRight':
-        if (file.isFolder && !expand) {
+        if (node.isFolder && !expand) {
           e.preventDefault()
           setExpand(true)
         }
         break
       case 'ArrowLeft':
-        if (file.isFolder && expand) {
+        if (node.isFolder && expand) {
           e.preventDefault()
           setExpand(false)
         }
@@ -187,72 +131,135 @@ const Node = ({ file, depth }: { file: File; depth: number }) => {
     }
   }
 
-  return (
-    <div className="w-full min-w-0" role="none">
-      <button
-        type="button"
-        role="treeitem"
-        aria-level={depth + 1}
-        aria-expanded={file.isFolder ? expand : undefined}
-        className="flex w-full min-w-0 cursor-pointer items-center rounded-sm py-1.5 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
-        style={{ paddingLeft: `${depth * 12 + 8}px`, paddingRight: '8px' }}
-        onClick={() => {
-          if (file.isFolder) setExpand((p) => !p)
-        }}
-        onKeyDown={handleKeyDown}
-      >
-        {file.isFolder ? (
-          <>
-            <HugeiconsIcon
-              icon={ArrowDown01Icon}
-              size={14}
-              aria-hidden
-              className={`mr-1 transition-transform duration-200 ${
-                expand ? 'rotate-0' : '-rotate-90'
-              }`}
-            />
-            <HugeiconsIcon
-              icon={Folder01Icon}
-              size={16}
-              aria-hidden
-              className="mr-2 text-blue-400"
-            />
-          </>
-        ) : (
-          <>
-            <div className="mr-1 w-3.5 shrink-0" aria-hidden />
-            <HugeiconsIcon
-              icon={File02Icon}
-              size={16}
-              aria-hidden
-              className="mr-2 text-gray-400"
-            />
-          </>
+  const icon = node.isFolder ? (
+    <>
+      <HugeiconsIcon
+        icon={ArrowDown01Icon}
+        size={14}
+        aria-hidden
+        className={cn(
+          'mr-1 shrink-0 transition-transform duration-200',
+          expand ? 'rotate-0' : '-rotate-90',
         )}
-        <span className="truncate">{file.name}</span>
-      </button>
+      />
+      <HugeiconsIcon
+        icon={Folder01Icon}
+        size={16}
+        aria-hidden
+        className="mr-2 shrink-0 text-blue-400"
+      />
+    </>
+  ) : (
+    <>
+      <div className="mr-1 w-3.5 shrink-0" aria-hidden />
+      <HugeiconsIcon
+        icon={File02Icon}
+        size={16}
+        aria-hidden
+        className="mr-2 shrink-0 text-gray-400"
+      />
+    </>
+  )
 
-      {file.isFolder && file?.child && expand && (
-        <FileView list={file.child} depth={depth + 1} />
+  const actions = (
+    <div
+      className={cn(
+        'ml-auto flex shrink-0 items-center gap-0.5 pl-1',
+        !isRenaming &&
+          'opacity-0 group-hover:opacity-100 focus-within:opacity-100',
       )}
+    >
+      {node.isFolder && (
+        <ActionButton
+          label={`New request inside ${node.name}`}
+          icon={AddCircleIcon}
+          onClick={() => addNode(node.id, false)}
+        />
+      )}
+      <ActionButton
+        label={`New folder inside ${node.name}`}
+        icon={FolderPlusIcon}
+        onClick={() => addNode(node.id, true)}
+      />
+      <ActionButton
+        label={`Rename ${node.name}`}
+        icon={Edit02Icon}
+        onClick={() => setIsRenaming(true)}
+      />
+      <ActionButton
+        label={`Delete ${node.name}`}
+        icon={Delete02Icon}
+        onClick={() => removeTreeNode(node.id)}
+      />
     </div>
   )
-}
 
-const FileView = ({
-  list,
-  depth = 0,
-  role = 'none',
-}: {
-  list: File[]
-  depth?: number
-  role?: 'tree' | 'group' | 'none'
-}) => {
+  const label = isRenaming ? (
+    <RenameInput
+      initial={node.name}
+      onCommit={(name) => {
+        renameNode(node.id, name)
+        setIsRenaming(false)
+      }}
+      onCancel={() => setIsRenaming(false)}
+    />
+  ) : (
+    <span className="truncate">{node.name}</span>
+  )
+
+  const sharedClassName =
+    'group flex w-full min-w-0 cursor-pointer items-center rounded-sm py-1.5 pr-1 text-sm text-gray-300 transition-colors select-none hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none'
+
+  if (node.isFolder) {
+    return (
+      <div className="w-full min-w-0" role="none">
+        <div
+          role="treeitem"
+          aria-level={depth + 1}
+          aria-expanded={expand}
+          tabIndex={0}
+          className={sharedClassName}
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onClick={() => setExpand((prev) => !prev)}
+          onKeyDown={handleKeyDown}
+        >
+          {icon}
+          {label}
+          {actions}
+        </div>
+
+        {expand && node.child && node.child.length > 0 && (
+          <div role="group" className="flex w-full min-w-0 flex-col">
+            {node.child.map((child) => (
+              <Node key={child.id} node={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
-    <div role={role} className="flex w-full min-w-0 flex-col">
-      {list.map((item) => (
-        <Node key={item.id} file={item} depth={depth} />
-      ))}
+    <div className="w-full min-w-0" role="none">
+      <NavLink
+        to={`/req/${node.id}`}
+        role="treeitem"
+        aria-level={depth + 1}
+        tabIndex={0}
+        className={({ isActive }) =>
+          cn(
+            sharedClassName,
+            isActive ? 'bg-white/10 text-white' : 'text-gray-300',
+          )
+        }
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        onClick={() => openTab(node.id)}
+        onKeyDown={handleKeyDown}
+      >
+        {icon}
+        {label}
+        {actions}
+      </NavLink>
     </div>
   )
 }
@@ -264,6 +271,9 @@ const FileExp = ({
   fileExpIsOpen: boolean
   onClose: () => void
 }) => {
+  const nodes = useCollectionStore((s) => s.nodes)
+  const { addNode } = useTreeActions()
+
   return (
     <>
       {fileExpIsOpen && (
@@ -276,7 +286,7 @@ const FileExp = ({
       )}
 
       <aside
-        id="files"
+        id="file-explorer"
         aria-label="File explorer"
         className={cn(
           'bg-dgray border-lgray flex h-full w-64 max-w-[80vw] shrink-0 flex-col overflow-y-auto overscroll-contain border-r py-2 text-white',
@@ -284,12 +294,42 @@ const FileExp = ({
           fileExpIsOpen ? 'flex' : 'hidden',
         )}
       >
-        <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
-          <HugeiconsIcon icon={IceCubesIcon} size={18} aria-hidden />
-          <p className="truncate text-sm">vathsavv56</p>
+        <div className="flex shrink-0 items-center justify-between gap-2 px-3 pb-2">
+          <p className="truncate text-sm">Collection</p>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <button
+              type="button"
+              aria-label="New request"
+              className="flex size-6 items-center justify-center rounded-sm text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
+              onClick={() => addNode(null, false)}
+            >
+              <HugeiconsIcon icon={AddCircleIcon} size={15} aria-hidden />
+            </button>
+            <button
+              type="button"
+              aria-label="New folder"
+              className="flex size-6 items-center justify-center rounded-sm text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
+              onClick={() => addNode(null, true)}
+            >
+              <HugeiconsIcon icon={FolderPlusIcon} size={15} aria-hidden />
+            </button>
+          </div>
         </div>
 
-        <FileView list={startData} role="tree" />
+        <div
+          id="file-tree"
+          role="tree"
+          aria-label="Requests"
+          className="min-w-0"
+        >
+          {nodes.length === 0 ? (
+            <p className="px-3 text-sm text-white/45">
+              Nothing here yet. Add a request to get started.
+            </p>
+          ) : (
+            nodes.map((node) => <Node key={node.id} node={node} depth={0} />)
+          )}
+        </div>
       </aside>
     </>
   )

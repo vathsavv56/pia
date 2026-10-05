@@ -4,9 +4,28 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-normal: 'Space Grotesk', sans-serif;
+  /* Named `body`, not `normal`: `--font-normal` would shadow Tailwind's own
+     `font-normal` weight utility. */
+  --font-body: 'Space Grotesk', sans-serif;
   --font-mono: 'Space Mono', monospace;
-  --color-lblue: #01baef;
   --color-lgray: #201c1c;
   --color-dgray: #191515;
+}
+
+@layer base {
+  /* Painted here, not on the app shell, so there is no white flash while the
+     page loads or when the viewport overscrolls. */
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-dgray);
+    color: var(--color-white, #fff);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
 }

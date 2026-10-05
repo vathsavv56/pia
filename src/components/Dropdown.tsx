@@ -4,6 +4,9 @@ import type { IconSvgElement } from '@hugeicons/react'
 import { UnfoldMoreDownIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
 
+/** HTML ids cannot contain spaces, and option values like 'API Key' do. */
+const idSafe = (value: string) => value.replace(/[^a-zA-Z0-9_-]/g, '-')
+
 export type DropdownOption<T extends string> = {
   value: T
   label: string
@@ -79,9 +82,11 @@ const Dropdown = <T extends string>({
   }
 
   const step = (delta: number) => {
+    if (options.length === 0) return
     const current = options.findIndex((option) => option.value === activeValue)
     const next = (current + delta + options.length) % options.length
-    setActiveValue(options[next].value)
+    const option = options[next]
+    if (option) setActiveValue(option.value)
   }
 
   const commit = (next: T) => {
@@ -102,12 +107,14 @@ const Dropdown = <T extends string>({
         break
       case 'Home':
         e.preventDefault()
-        setActiveValue(options[0].value)
+        if (options[0]) setActiveValue(options[0].value)
         break
-      case 'End':
+      case 'End': {
         e.preventDefault()
-        setActiveValue(options[options.length - 1].value)
+        const last = options[options.length - 1]
+        if (last) setActiveValue(last.value)
         break
+      }
       case 'Enter':
       case ' ':
         e.preventDefault()
@@ -146,7 +153,7 @@ const Dropdown = <T extends string>({
           id={menuId}
           role="listbox"
           aria-label={label}
-          aria-activedescendant={`${menuId}-${activeValue}`}
+          aria-activedescendant={`${menuId}-${idSafe(activeValue)}`}
           tabIndex={-1}
           onKeyDown={handleMenuKeyDown}
           className={cn(
@@ -158,7 +165,7 @@ const Dropdown = <T extends string>({
           {options.map((option) => (
             <div
               key={option.value}
-              id={`${menuId}-${option.value}`}
+              id={`${menuId}-${idSafe(option.value)}`}
               role="option"
               aria-selected={option.value === value}
               onMouseEnter={() => setActiveValue(option.value)}

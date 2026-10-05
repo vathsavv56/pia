@@ -2,8 +2,28 @@ import UrlBar from '@/components/URLbar'
 import Response from '@/components/Response'
 import Request from '@/components/Request'
 import PageList from '@/components/PageList'
+import { useCollectionStore } from '@/context/collectionStore'
+import { findNode } from '@/utils/tree'
+import { Navigate, useParams } from 'react-router'
+import { useEffect } from 'react'
 
 const Client = () => {
+  const { id } = useParams<{ id: string }>()
+  const nodes = useCollectionStore((s) => s.nodes)
+  const activeId = useCollectionStore((s) => s.activeId)
+  const openTab = useCollectionStore((s) => s.openTab)
+
+  const target = id ? findNode(nodes, id) : null
+
+  // A pasted or bookmarked /req/:id URL should open the tab, not just render.
+  useEffect(() => {
+    if (id && target && !target.isFolder && activeId !== id) openTab(id)
+  }, [id, target, activeId, openTab])
+
+  // Keep the URL and the open request pointing at the same thing.
+  if (id && (!target || target.isFolder)) return <Navigate replace to="/" />
+  if (!id && activeId) return <Navigate replace to={`/req/${activeId}`} />
+
   return (
     <main
       id="client"

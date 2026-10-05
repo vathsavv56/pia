@@ -3,7 +3,8 @@ import ParamsSection from '@/components/ParamsSection'
 import Headers from '@/components/Headers'
 import Auth from '@/components/Auth'
 import Body from '@/components/Body'
-import { useRequestStore } from '@/context/requestStore'
+import { useDraft } from '@/context/requestStore'
+import type { KeyValueRow } from '@/types/request.type'
 import { cn } from '@/utils/cn'
 
 type Tab = 'Params' | 'Headers' | 'Auth' | 'Body'
@@ -12,6 +13,10 @@ const tabArr: Tab[] = ['Params', 'Headers', 'Auth', 'Body']
 
 const tabId = (tab: Tab) => `request-tab-${tab}`
 const panelId = (tab: Tab) => `request-panel-${tab}`
+
+/** Rows that actually carry a key, so the badge means something useful. */
+const filledCount = (rows: KeyValueRow[]) =>
+  rows.filter((row) => row.keyP.trim() !== '').length
 
 const Request = () => {
   const renderTab = (tab: Tab) => {
@@ -37,10 +42,8 @@ const Request = () => {
 
   const tablistRef = useRef<HTMLDivElement>(null)
 
-  const params = useRequestStore((s) => s.params)
-  const headers = useRequestStore((s) => s.headers)
-  const filledCount = (rows: typeof params) =>
-    rows.filter((row) => row.keyP !== '').length
+  const params = useDraft((draft) => draft.params)
+  const headers = useDraft((draft) => draft.headers)
 
   const focusTab = (tab: Tab) => {
     setCurrTab(tab)
@@ -101,7 +104,7 @@ const Request = () => {
               type="button"
               role="tab"
               aria-selected={isSelected}
-              aria-controls={panelId(item)}
+              aria-controls={isSelected ? panelId(item) : undefined}
               tabIndex={isSelected ? 0 : -1}
               className={cn(
                 'flex h-fit w-fit shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-sm whitespace-nowrap hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none',

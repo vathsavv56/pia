@@ -12,11 +12,9 @@ import {
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
 import Dropdown from '@/components/Dropdown'
-import { useRequestStore, freshAuth } from '@/context/requestStore'
-import type { AuthType, ApiKeyLocation } from '@/context/requestStore'
-
-const authTypeArr: AuthType[] = ['None', 'Basic', 'Bearer', 'API Key']
-const apiKeyLocationArr: ApiKeyLocation[] = ['Header', 'Query Param']
+import { freshAuth, useDraft, useDraftActions } from '@/context/requestStore'
+import { apiKeyLocationArr, authTypeArr } from '@/types/request.type'
+import type { AuthType } from '@/types/request.type'
 
 const authIcon: Record<AuthType, IconSvgElement> = {
   None: Cancel01Icon,
@@ -74,8 +72,8 @@ const Field = ({
 )
 
 const Auth = () => {
-  const auth = useRequestStore((s) => s.auth)
-  const setAuth = useRequestStore((s) => s.setAuth)
+  const auth = useDraft((draft) => draft.auth)
+  const { setAuth } = useDraftActions()
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false)
 
   return (

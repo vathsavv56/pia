@@ -1,6 +1,6 @@
 import Client from '@/components/Client'
 import MainContainer from '@/MainContainer'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
 
 const router = createBrowserRouter([
   {
@@ -12,10 +12,14 @@ const router = createBrowserRouter([
         element: <Client />,
       },
       {
-        path: '/req/:id',
-        element: <div>THis is /req/:id</div>,
+        path: 'req/:id',
+        element: <Client />,
       },
     ],
+  },
+  {
+    path: '*',
+    element: <Navigate replace to="/" />,
   },
 ])
 

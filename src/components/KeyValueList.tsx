@@ -5,17 +5,15 @@ import {
   SolidLine02Icon,
 } from '@hugeicons/core-free-icons'
 import { cn } from '@/utils/cn'
-import { useRequestStore } from '@/context/requestStore'
-import type { ListKey } from '@/context/Keyvalue'
+import { useDraft, useDraftActions } from '@/context/requestStore'
+import type { ListKey } from '@/types/request.type'
 
 const inputStyles =
   'focus:outline-none w-full min-w-0 rounded-md px-1.5 py-1.5 focus:ring-1 focus:ring-blue-500 placeholder:text-white/55 hover:cursor-default bg-transparent sm:px-2 sm:py-2'
 
 const KeyValueList = ({ list }: { list: ListKey }) => {
-  const rows = useRequestStore((s) => s[list])
-  const updateRow = useRequestStore((s) => s.updateRow)
-  const toggleRow = useRequestStore((s) => s.toggleRow)
-  const removeRow = useRequestStore((s) => s.removeRow)
+  const rows = useDraft((draft) => draft[list])
+  const { updateRow, toggleRow, removeRow } = useDraftActions()
 
   return (
     <div

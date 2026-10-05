@@ -1,0 +1,9 @@
+1) create Response object with zod
+2) create file explorer with rename , create new file etc 
+3) update ui with <NavLink> and change it to make and create new files + show active file
+4) zustand to create request Object + inter component subsciption
+5) make the website responsive 
+6) complete reverse Proxy 
+7) test  with reverseProxy and check for results
+8) implement JWT based auth 
+9) configure db and auto assign pfp 
