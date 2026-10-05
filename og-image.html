@@ -1,0 +1,124 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>PIA og image</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@96,800&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      .stage {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: linear-gradient(
+          135deg,
+          #7dd3fc 0%,
+          #fbbf24 26%,
+          #fb923c 52%,
+          #ec4899 74%,
+          #8b5cf6 100%
+        );
+      }
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+      }
+      .b110 {
+        filter: blur(110px);
+      }
+      .b70 {
+        filter: blur(70px);
+      }
+      .b40 {
+        filter: blur(40px);
+      }
+      .b18 {
+        filter: blur(18px);
+      }
+
+      .arc {
+        position: absolute;
+        left: -100px;
+        top: -750px;
+        width: 1700px;
+        height: 1000px;
+        border-radius: 50%;
+        background: #a5f3fc;
+        opacity: 0.55;
+        filter: blur(40px);
+      }
+      .rim {
+        position: absolute;
+        left: -100px;
+        top: -750px;
+        width: 1700px;
+        height: 1000px;
+        border-radius: 50%;
+        border: 3px solid rgba(236, 254, 255, 0.35);
+        filter: blur(18px);
+      }
+
+      .row {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 50px;
+      }
+      .row img {
+        height: 176px;
+        width: auto;
+        display: block;
+        filter: drop-shadow(0 10px 34px rgba(80, 20, 60, 0.28));
+      }
+      .word {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-optical-sizing: none;
+        font-variation-settings: 'opsz' 96, 'wght' 800;
+        font-weight: 800;
+        font-size: 236px;
+        line-height: 1;
+        letter-spacing: -4px;
+        color: #ffffff;
+        text-shadow: 0 2px 30px rgba(0, 0, 0, 0.06);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="blob b110" style="left: 700px; top: -170px; width: 720px; height: 480px; background: #22d3ee; opacity: 0.95"></div>
+      <div class="blob b110" style="left: -120px; top: -60px; width: 600px; height: 400px; background: #fde047; opacity: 0.85"></div>
+      <div class="blob b110" style="left: -140px; top: 360px; width: 880px; height: 520px; background: #fbbf24; opacity: 0.95"></div>
+      <div class="blob b110" style="left: 380px; top: 130px; width: 520px; height: 460px; background: #f43f5e; opacity: 0.55"></div>
+      <div class="blob b110" style="left: 730px; top: 360px; width: 840px; height: 560px; background: #a855f7; opacity: 0.9"></div>
+      <div class="blob b70" style="left: 440px; top: 490px; width: 760px; height: 400px; background: #f472b6; opacity: 0.7"></div>
+      <div class="blob b70" style="left: -180px; top: 200px; width: 480px; height: 440px; background: #f97316; opacity: 0.7"></div>
+
+      <div class="arc"></div>
+      <div class="rim"></div>
+
+      <div class="row">
+        <img src="../src/assets/logo-favicon.svg" alt="" />
+        <div class="word">PIA</div>
+      </div>
+    </div>
+  </body>
+</html>
