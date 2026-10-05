@@ -14,7 +14,7 @@ const Client = () => {
         <UrlBar />
       </div>
 
-      <div className="bg-lgray mx-2 mb-2 flex min-h-0 w-[calc(100%-1rem)] flex-1 flex-col overflow-x-hidden overflow-y-auto rounded-md lg:flex-row lg:overflow-hidden">
+      <div className="bg-lgray mx-2 mb-2 flex min-h-0 w-[calc(100%-1rem)] flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto overscroll-contain rounded-md lg:flex-row lg:overflow-hidden">
         <Request />
         <Response />
       </div>

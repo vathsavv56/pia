@@ -48,7 +48,7 @@ const UrlBar = () => {
     }
   }
   return (
-    <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
+    <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] min-w-0 items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
       <Dropdown
         label="HTTP method"
         value={method}
@@ -66,7 +66,7 @@ const UrlBar = () => {
       />
 
       {/* {"Input"} */}
-      <div id="input" className="mx-1 h-6 w-full min-w-0 flex-1 sm:mx-2">
+      <div id="input" className="h-6 w-full min-w-0 flex-1 sm:mx-2">
         <input
           type="text"
           aria-label="Request URL"
@@ -86,7 +86,7 @@ const UrlBar = () => {
       <button
         id="send"
         type="button"
-        className="sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-3 text-sm text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4"
+        className="sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md bg-blue-500 px-2.5 text-sm text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4"
       >
         Send
       </button>

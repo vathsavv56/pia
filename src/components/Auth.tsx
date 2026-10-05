@@ -63,8 +63,8 @@ const Field = ({
       }
       className={cn(
         inputStyles,
-        'w-full px-0 py-1.5 hover:cursor-text focus:ring-0',
-        mono ? 'font-mono text-sm' : 'text-sm',
+        'w-full px-0 py-1.5 text-base hover:cursor-text focus:ring-0 sm:text-sm',
+        mono ? 'font-mono' : '',
         className,
       )}
     />
@@ -80,7 +80,7 @@ const Auth = () => {
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto p-1">
+      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto overscroll-contain p-1 pb-2">
         {auth.type === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/55 select-none">

@@ -75,14 +75,14 @@ const Request = () => {
   }
 
   return (
-    <section className="bg-dgray flex min-h-[24rem] w-full flex-col rounded-md lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0 lg:overflow-hidden">
+    <section className="bg-dgray flex min-h-[22rem] w-full flex-col rounded-md sm:min-h-[24rem] lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0 lg:overflow-hidden">
       <div
         ref={tablistRef}
         role="tablist"
         aria-label="Request sections"
         onKeyDown={handleTabListKeyDown}
         className={cn(
-          'mt-2 flex w-full shrink-0 scrollbar-none items-center gap-1 overflow-x-auto text-white sm:mt-5 sm:w-fit sm:justify-around sm:gap-2',
+          'mt-2 flex w-full shrink-0 scrollbar-none items-center gap-1 overflow-x-auto overscroll-x-contain px-1 text-white sm:mt-5 sm:w-fit sm:justify-around sm:gap-2 sm:px-0',
         )}
       >
         {tabArr.map((item) => {

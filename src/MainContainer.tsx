@@ -5,12 +5,17 @@ import { useState } from 'react'
 import { Outlet } from 'react-router'
 
 const MainContainer = () => {
-  const [isFileExpOpen, setIsFileExpOpen] = useState<boolean>(true)
+  const [isFileExpOpen, setIsFileExpOpen] = useState<boolean>(
+    () => window.matchMedia('(min-width: 64rem)').matches,
+  )
 
   return (
     <div className="bg-dgray relative flex h-dvh w-full overflow-hidden font-normal">
       <NavBar setIsFileExpOpen={setIsFileExpOpen} />
-      <FileExp fileExpIsOpen={isFileExpOpen} />
+      <FileExp
+        fileExpIsOpen={isFileExpOpen}
+        onClose={() => setIsFileExpOpen(false)}
+      />
       <Outlet />
     </div>
   )

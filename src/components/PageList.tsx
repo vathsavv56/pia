@@ -14,7 +14,7 @@ export const FileNode = ({ method, name, onDelete }: FileNodeProps) => {
     <div
       className={cn(
         'group flex h-8 shrink-0 items-center',
-        'rounded-md px-1.5',
+        'rounded-md px-1 sm:px-1.5',
         'bg-lgray select-none',
       )}
     >
@@ -26,7 +26,7 @@ export const FileNode = ({ method, name, onDelete }: FileNodeProps) => {
       </div>
 
       {/* Name */}
-      <span className="max-w-24 min-w-0 truncate px-1 text-sm text-white sm:max-w-32">
+      <span className="max-w-20 min-w-0 truncate px-1 text-sm text-white sm:max-w-32">
         {name}
       </span>
 
@@ -35,7 +35,7 @@ export const FileNode = ({ method, name, onDelete }: FileNodeProps) => {
         <button
           type="button"
           aria-label={`Close ${name}`}
-          className="flex size-6 items-center justify-center rounded-sm text-gray-400 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
+          className="flex size-7 items-center justify-center rounded-sm text-gray-400 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
           onClick={onDelete}
         >
           <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" aria-hidden />
@@ -89,7 +89,7 @@ const PageList = () => {
     <div
       role="group"
       aria-label="Open requests"
-      className="mt-1 ml-2 flex h-9 w-[calc(100%-0.5rem)] shrink-0 scrollbar-none items-center gap-2 overflow-x-auto sm:mt-2 sm:h-10"
+      className="mt-1 ml-2 flex h-9 w-[calc(100%-0.5rem)] shrink-0 scrollbar-none items-center gap-2 overflow-x-auto overscroll-x-contain pe-2 sm:mt-2 sm:h-10"
     >
       {pageArr.map((node, index) => (
         <FileNode
@@ -104,7 +104,7 @@ const PageList = () => {
       <button
         type="button"
         aria-label="New request"
-        className="flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
+        className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none"
         onClick={add}
       >
         <HugeiconsIcon

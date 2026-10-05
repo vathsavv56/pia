@@ -54,7 +54,7 @@ const HeadersList = ({ headersList }: HeadersListProps) => {
       </button>
 
       {toggle && (
-        <div className="bg-lgray mr-2 ml-8 rounded-md border border-white/5 p-3">
+        <div className="bg-lgray mr-2 ml-6 rounded-md border border-white/5 p-3 sm:ml-8">
           <table className="w-full table-fixed text-left font-mono text-xs sm:text-sm">
             <tbody>
               {Object.entries(displayHeaders).map(([key, value]) => (
@@ -100,10 +100,10 @@ const Response = ({
   return (
     <section
       aria-label="Response"
-      className="bg-lgray flex min-h-[18rem] w-full flex-col overflow-y-auto rounded-md p-3 sm:p-5 lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0"
+      className="bg-lgray flex min-h-[16rem] w-full flex-col overflow-y-auto overscroll-contain rounded-md p-2 sm:min-h-[18rem] sm:p-4 lg:h-full lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:shrink-0 lg:p-5"
     >
       <HeadersList />
-      <div className="min-w-0" aria-live="polite">
+      <div className="min-w-0 overflow-x-auto" aria-live="polite">
         <JsonView
           value={parsedData as object}
           style={{

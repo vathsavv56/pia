@@ -257,24 +257,41 @@ const FileView = ({
   )
 }
 
-const FileExp = ({ fileExpIsOpen }: { fileExpIsOpen: boolean }) => {
+const FileExp = ({
+  fileExpIsOpen,
+  onClose,
+}: {
+  fileExpIsOpen: boolean
+  onClose: () => void
+}) => {
   return (
-    <aside
-      id="files"
-      aria-label="File explorer"
-      className={cn(
-        'bg-dgray border-lgray flex h-full w-64 shrink-0 flex-col overflow-y-auto overscroll-contain border-r py-2 text-white',
-        'absolute inset-y-0 left-12 z-40 shadow-2xl sm:left-14 lg:static lg:left-0 lg:z-auto lg:w-56 lg:shadow-none xl:w-72',
-        fileExpIsOpen ? 'flex' : 'hidden',
+    <>
+      {fileExpIsOpen && (
+        <button
+          type="button"
+          aria-label="Close file explorer"
+          onClick={onClose}
+          className="absolute inset-y-0 left-11 z-30 w-full cursor-default bg-black/60 sm:left-14 lg:hidden"
+        />
       )}
-    >
-      <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
-        <HugeiconsIcon icon={IceCubesIcon} size={18} aria-hidden />
-        <p className="truncate text-sm">vathsavv56</p>
-      </div>
 
-      <FileView list={startData} role="tree" />
-    </aside>
+      <aside
+        id="files"
+        aria-label="File explorer"
+        className={cn(
+          'bg-dgray border-lgray flex h-full w-64 max-w-[80vw] shrink-0 flex-col overflow-y-auto overscroll-contain border-r py-2 text-white',
+          'absolute inset-y-0 left-11 z-40 shadow-2xl sm:left-14 lg:static lg:left-0 lg:z-auto lg:w-56 lg:max-w-none lg:shadow-none xl:w-72',
+          fileExpIsOpen ? 'flex' : 'hidden',
+        )}
+      >
+        <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
+          <HugeiconsIcon icon={IceCubesIcon} size={18} aria-hidden />
+          <p className="truncate text-sm">vathsavv56</p>
+        </div>
+
+        <FileView list={startData} role="tree" />
+      </aside>
+    </>
   )
 }
 

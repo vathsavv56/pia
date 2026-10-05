@@ -15,7 +15,7 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
     <nav
       id="left-nav"
       className={cn(
-        'border-lgray flex h-full w-12 shrink-0 flex-col items-center justify-between border-r p-1.5 sm:w-14 sm:p-2 lg:w-16',
+        'border-lgray flex h-full w-11 shrink-0 flex-col items-center justify-between border-r p-1 sm:w-14 sm:p-2 lg:w-16',
       )}
     >
       <div
@@ -24,9 +24,9 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
       >
         <div
           id="logo"
-          className={cn('flex size-9 items-center justify-center sm:size-10')}
+          className={cn('flex size-8 items-center justify-center sm:size-10')}
         >
-          <img src={LOGO} alt="logo" className="w-7 sm:w-8" />
+          <img src={LOGO} alt="logo" className="w-6 sm:w-8" />
         </div>
 
         <button
@@ -34,7 +34,7 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
           id="files"
           aria-label="Toggle file explorer"
           className={cn(
-            'flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10',
+            'flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10',
           )}
           onClick={() => setIsFileExpOpen((prev) => !prev)}
         >
@@ -53,7 +53,7 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
           type="button"
           id="help"
           aria-label="Help"
-          className="flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10"
+          className="flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10"
         >
           <HugeiconsIcon icon={HelpCircleIcon} fill="white" />
         </button>
@@ -61,7 +61,7 @@ const NavBar = ({ setIsFileExpOpen }: NavBarProps) => {
           type="button"
           id="account"
           aria-label="Account"
-          className="flex size-9 items-center justify-center rounded-lg hover:bg-white/10 sm:size-10"
+          className="flex size-8 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:outline-none sm:size-10"
         >
           <HugeiconsIcon
             icon={UserSquareIcon}

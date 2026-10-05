@@ -185,7 +185,7 @@ const Body = () => {
 
   return (
     <div className="flex h-full w-full flex-col text-white">
-      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto">
+      <div className="min-h-0 flex-1 scrollbar-none overflow-y-auto overscroll-contain">
         {body.mode === 'None' && (
           <div className="flex h-full w-full items-center justify-center">
             <p className="text-sm text-white/55 select-none">
@@ -206,7 +206,7 @@ const Body = () => {
               spellCheck={false}
               className={cn(
                 inputStyles,
-                'h-full w-full resize-none scrollbar-none font-mono text-sm text-white/90',
+                'h-full w-full resize-none scrollbar-none font-mono text-base text-white/90 sm:text-sm',
               )}
             />
           </div>
@@ -227,7 +227,7 @@ const Body = () => {
               spellCheck={false}
               className={cn(
                 inputStyles,
-                'h-full w-full resize-none scrollbar-none font-mono text-sm text-emerald-500',
+                'h-full w-full resize-none scrollbar-none font-mono text-base text-emerald-500 sm:text-sm',
               )}
             />
           </div>
