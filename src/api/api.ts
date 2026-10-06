@@ -28,28 +28,129 @@ const flattenHeaders = (
   return flat
 }
 
-const textOf = (data: unknown): string => {
-  if (typeof data === 'string') return data
-  if (data === undefined || data === null) return ''
-  return JSON.stringify(data)
+/** Raw bytes straight from axios (`arraybuffer`) into a Uint8Array. */
+const toBytes = (data: unknown): Uint8Array => {
+  if (data instanceof Uint8Array) return data
+  if (data instanceof ArrayBuffer) return new Uint8Array(data)
+  if (typeof data === 'string')
+    return new TextEncoder().encode(data)
+  if (data === undefined || data === null) return new Uint8Array(0)
+  if (typeof data === 'object' && 'buffer' in (data as object)) {
+    try {
+      return new Uint8Array(data as ArrayBufferLike as ArrayBuffer)
+    } catch {
+      // fall through to JSON encoding below
+    }
+  }
+  return new TextEncoder().encode(JSON.stringify(data))
+}
+
+const bytesToText = (bytes: Uint8Array): string => {
+  try {
+    return new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+  } catch {
+    return ''
+  }
+}
+
+/** Chunked base64 so large images don't blow the call stack. */
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  let binary = ''
+  const CHUNK = 0x8000
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
+  }
+  return btoa(binary)
+}
+
+/** Case-insensitive lookup because proxies/casing vary. */
+const contentTypeOf = (headers: Record<string, string>): string => {
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === 'content-type') return value
+  }
+  return ''
+}
+
+const mimeOf = (contentType: string): string =>
+  contentType.split(';')[0]?.trim().toLowerCase() ?? ''
+
+type ReadPayload = {
+  payloadKind: 'json' | 'xml' | 'html' | 'text' | 'image' | 'empty'
+  data: unknown
+  raw: string
+  dataUrl: string | null
 }
 
 /**
- * Works out whether the body is JSON, plain text, or nothing at all, and
- * keeps the parsed value around so the viewer does not parse twice.
+ * Auto-detects the body type from the content-type header first, then by
+ * sniffing the content, so mislabelled (or unlabelled) responses still
+ * render in the right viewer.
  */
-const readPayload = (raw: string, contentType: string) => {
-  if (raw === '') return { payloadKind: 'empty' as const, data: null }
+const readPayload = (
+  bytes: Uint8Array,
+  contentType: string,
+): ReadPayload => {
+  if (bytes.length === 0) {
+    return { payloadKind: 'empty', data: null, raw: '', dataUrl: null }
+  }
 
-  const looksJson = contentType.includes('json') || /^\s*[[{]/.test(raw)
-  if (looksJson) {
-    try {
-      return { payloadKind: 'json' as const, data: JSON.parse(raw) }
-    } catch {
-      // Server said JSON but sent something else. Show the text as-is.
+  const mime = mimeOf(contentType)
+
+  // Images are binary — never try to decode them as text for display.
+  if (mime.startsWith('image/')) {
+    return {
+      payloadKind: 'image',
+      data: null,
+      raw: '',
+      dataUrl: `data:${mime};base64,${bytesToBase64(bytes)}`,
     }
   }
-  return { payloadKind: 'text' as const, data: null }
+
+  const raw = bytesToText(bytes)
+  if (raw.trim() === '') {
+    // Whitespace-only bodies count as empty for display purposes, unless
+    // they claim to be an image (handled above).
+    if (mime.startsWith('text/') || mime === '') {
+      return raw === ''
+        ? { payloadKind: 'empty', data: null, raw: '', dataUrl: null }
+        : { payloadKind: 'text', data: null, raw, dataUrl: null }
+    }
+  }
+
+  const trimmed = raw.trimStart()
+  const looksJson =
+    mime.includes('json') ||
+    mime.endsWith('+json') ||
+    trimmed.startsWith('{') ||
+    trimmed.startsWith('[')
+  if (looksJson) {
+    try {
+      return { payloadKind: 'json', data: JSON.parse(raw), raw, dataUrl: null }
+    } catch {
+      // Server said JSON but sent something else — fall through to the
+      // text/html/xml sniffing below instead of forcing raw JSON view.
+    }
+  }
+
+  const looksHtml =
+    mime.includes('html') ||
+    /^\s*<!doctype\s+html/i.test(raw) ||
+    /^\s*<html[\s>]/i.test(raw)
+  if (looksHtml) {
+    return { payloadKind: 'html', data: null, raw, dataUrl: null }
+  }
+
+  const looksXml =
+    mime.includes('xml') ||
+    mime.endsWith('+xml') ||
+    mime.includes('svg') ||
+    /^\s*<\?xml/i.test(raw) ||
+    (/^\s*<[a-zA-Z][^>]*>/.test(trimmed) && /<\/[^>]+>\s*$/.test(raw.trimEnd()))
+  if (looksXml) {
+    return { payloadKind: 'xml', data: null, raw, dataUrl: null }
+  }
+
+  return { payloadKind: 'text', data: null, raw, dataUrl: null }
 }
 
 /** Maps anything axios can throw into our own error shape. */
@@ -76,8 +177,9 @@ const toResponseError = (thrown: unknown): ResponseError => {
 
 const toApiResponse = (res: AxiosResponse, startedAt: number): ApiResponse => {
   const headers = flattenHeaders(res.headers)
-  const raw = textOf(res.data)
-  const { payloadKind, data } = readPayload(raw, headers['content-type'] ?? '')
+  const contentType = contentTypeOf(headers)
+  const bytes = toBytes(res.data)
+  const { payloadKind, data, raw, dataUrl } = readPayload(bytes, contentType)
 
   // In proxy mode res.config.url is the proxy's own address. The proxy tells
   // us the URL it actually reached, which is the one worth showing.
@@ -91,12 +193,24 @@ const toApiResponse = (res: AxiosResponse, startedAt: number): ApiResponse => {
     url: finalUrl,
     headers,
     payloadKind,
+    contentType: mimeOf(contentType),
+    dataUrl,
     raw,
     data,
-    sizeBytes: new Blob([raw]).size,
+    sizeBytes: bytes.byteLength,
     durationMs: Math.round(performance.now() - startedAt),
     timestamp: new Date().toISOString(),
   }
+}
+
+/**
+ * Ask for raw bytes and skip axios's built-in JSON transform. We decode and
+ * sniff the payload ourselves in `readPayload`, which keeps binary bodies
+ * (images) intact instead of mangling them into strings.
+ */
+const bufferConfig = {
+  responseType: 'arraybuffer' as const,
+  transformResponse: [(data: unknown) => data],
 }
 
 /**
@@ -107,7 +221,8 @@ const toApiResponse = (res: AxiosResponse, startedAt: number): ApiResponse => {
 const sendViaProxy = async (
   request: SerializedRequest,
   signal: AbortSignal,
-): Promise<AxiosResponse> => client.post(PROXY_URL, request, { signal })
+): Promise<AxiosResponse> =>
+  client.post(PROXY_URL, request, { signal, ...bufferConfig })
 
 /**
  * Sends straight to the target URL. Only works for APIs that allow
@@ -125,6 +240,7 @@ const sendDirect = async (
     headers: request.headers,
     data: request.body,
     signal,
+    ...bufferConfig,
   })
 
 /**

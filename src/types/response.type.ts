@@ -28,7 +28,14 @@ export const statusKind = (status: number): StatusKind => {
 /*                                  Payload                                   */
 /* -------------------------------------------------------------------------- */
 
-export const payloadKindArr = ['json', 'text', 'empty'] as const
+export const payloadKindArr = [
+  'json',
+  'xml',
+  'html',
+  'text',
+  'image',
+  'empty',
+] as const
 export const payloadKindSchema = z.enum(payloadKindArr)
 export type PayloadKind = z.infer<typeof payloadKindSchema>
 
@@ -44,6 +51,10 @@ export const responseSchema = z.object({
   url: z.string(),
   headers: z.record(z.string(), z.string()),
   payloadKind: payloadKindSchema,
+  /** Lower-cased mime from the `content-type` header (without params). */
+  contentType: z.string(),
+  /** `data:` URL for image payloads so the UI can render them. */
+  dataUrl: z.string().nullable(),
   /** Raw body exactly as it came back. */
   raw: z.string(),
   /** `raw` parsed into JSON when possible, otherwise `null`. */
