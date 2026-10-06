@@ -3,6 +3,7 @@ import NavBar from '@/components/NavBar'
 import FileExp from '@/components/FileExp'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet } from 'react-router'
+import { warmupProxy } from '@/api/warmup'
 
 const MainContainer = () => {
   const [isFileExpOpen, setIsFileExpOpen] = useState<boolean>(
@@ -10,6 +11,11 @@ const MainContainer = () => {
   )
 
   const toggleFileExp = useCallback(() => setIsFileExpOpen((prev) => !prev), [])
+
+  // Wake the reverse proxy (Render sleeps when idle) as soon as the app loads.
+  useEffect(() => {
+    warmupProxy()
+  }, [])
 
   // The sidebar covers the page on small screens, so Escape closes it.
   useEffect(() => {
