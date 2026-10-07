@@ -49,7 +49,7 @@ const startCollection = (): Pick<
   const root = newFolder(nanoid(8), 'My Collection')
 
   return {
-    nodes: [{ ...root, child: [newRequest(requestId, 'Request-1')] }],
+    nodes: [{ ...root, child: [newRequest(requestId, 'new Request')] }],
     openIds: [requestId],
     activeId: requestId,
   }

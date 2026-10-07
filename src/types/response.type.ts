@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-/* -------------------------------------------------------------------------- */
-/*                                  Status                                    */
-/* -------------------------------------------------------------------------- */
 
 export const statusKindArr = [
   'success',
@@ -24,9 +21,6 @@ export const statusKind = (status: number): StatusKind => {
   return 'serverError'
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                  Payload                                   */
-/* -------------------------------------------------------------------------- */
 
 export const payloadKindArr = [
   'json',
@@ -39,9 +33,6 @@ export const payloadKindArr = [
 export const payloadKindSchema = z.enum(payloadKindArr)
 export type PayloadKind = z.infer<typeof payloadKindSchema>
 
-/* -------------------------------------------------------------------------- */
-/*                            A single HTTP response                          */
-/* -------------------------------------------------------------------------- */
 
 export const responseSchema = z.object({
   status: z.number(),

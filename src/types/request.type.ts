@@ -1,8 +1,6 @@
 import { z } from 'zod'
 
-/* -------------------------------------------------------------------------- */
-/*                              HTTP primitives                               */
-/* -------------------------------------------------------------------------- */
+
 
 export const httpMethodArr = [
   'GET',
@@ -21,9 +19,6 @@ export const listKeyArr = ['params', 'headers'] as const
 export const listKeySchema = z.enum(listKeyArr)
 export type ListKey = z.infer<typeof listKeySchema>
 
-/* -------------------------------------------------------------------------- */
-/*                              Key / value rows                              */
-/* -------------------------------------------------------------------------- */
 
 export const keyValueRowSchema = z.object({
   id: z.string(),
@@ -33,9 +28,6 @@ export const keyValueRowSchema = z.object({
 })
 export type KeyValueRow = z.infer<typeof keyValueRowSchema>
 
-/* -------------------------------------------------------------------------- */
-/*                                     Auth                                   */
-/* -------------------------------------------------------------------------- */
 
 export const authTypeArr = ['None', 'Basic', 'Bearer', 'API Key'] as const
 export const authTypeSchema = z.enum(authTypeArr)
@@ -62,9 +54,9 @@ export const authSchema = z.discriminatedUnion('type', [
 ])
 export type Auth = z.infer<typeof authSchema>
 
-/* -------------------------------------------------------------------------- */
-/*                                    Body                                   */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export const bodyModeArr = ['None', 'Text', 'JSON', 'File'] as const
 export const bodyModeSchema = z.enum(bodyModeArr)
@@ -78,9 +70,6 @@ export const requestBodySchema = z.discriminatedUnion('mode', [
 ])
 export type RequestBody = z.infer<typeof requestBodySchema>
 
-/* -------------------------------------------------------------------------- */
-/*                          The editable draft                               */
-/* -------------------------------------------------------------------------- */
 
 export const requestDraftSchema = z.object({
   method: httpMethodSchema,
@@ -91,6 +80,7 @@ export const requestDraftSchema = z.object({
   body: requestBodySchema,
 })
 export type RequestDraft = z.infer<typeof requestDraftSchema>
+
 
 /* -------------------------------------------------------------------------- */
 /*                     What actually travels over the wire                   */
