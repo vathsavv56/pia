@@ -33,6 +33,24 @@ const methodColor = (method: HttpMethod) => {
   }
 }
 
+/** True for localhost / LAN URLs that browsers usually block via CORS. */
+const isLocalUrl = (value: string): boolean => {
+  try {
+    const host = new URL(value.trim()).hostname.toLowerCase().replace(/\.$/, '')
+    if (host === 'localhost' || host.endsWith('.localhost')) return true
+    if (host === '0.0.0.0' || host === '::1' || host === '[::1]') return true
+    if (host.endsWith('.local')) return true
+    if (/^127\./.test(host)) return true
+    if (/^10\./.test(host)) return true
+    if (/^192\.168\./.test(host)) return true
+    const m172 = host.match(/^172\.(\d+)\./)
+    if (m172 && Number(m172[1]) >= 16 && Number(m172[1]) <= 31) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 const UrlBar = () => {
   const activeId = useCollectionStore((s) => s.activeId)
   const method = useDraft((draft) => draft.method)
@@ -45,14 +63,20 @@ const UrlBar = () => {
 
   const [isHovered, setIsHovered] = useState<boolean>(false)
 
-  const handleSend = () => void send(draft)
-
   // Every draft edit is a no-op without an open request, so rather than
   // pretending to be editable, say so.
   const isEditable = activeId !== null
+  const showLocalWarning = isEditable && isLocalUrl(url)
+  const canSend = isEditable && !showLocalWarning
+
+  const handleSend = () => {
+    if (!canSend) return
+    void send(draft)
+  }
 
   return (
-    <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] min-w-0 items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
+    <>
+      <div className="bg-lgray mx-2 flex h-14 w-[calc(100%-1rem)] min-w-0 items-center gap-1 rounded-md px-1.5 sm:h-15 sm:gap-2 sm:px-2">
       <Dropdown
         label="HTTP method"
         value={method}
@@ -112,10 +136,11 @@ const UrlBar = () => {
         <button
           id="send"
           type="button"
-          disabled={!isEditable}
+          disabled={!canSend}
+          title={showLocalWarning ? 'Local URLs are not supported' : undefined}
           className={cn(
             'sm:text-md flex h-8 w-fit shrink-0 items-center justify-center rounded-md px-3 text-sm text-white focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-white focus-visible:outline-none sm:px-4',
-            isEditable
+            canSend
               ? 'bg-blue-500 hover:cursor-pointer'
               : 'cursor-not-allowed bg-white/15 text-white/50',
           )}
@@ -124,7 +149,13 @@ const UrlBar = () => {
           Send
         </button>
       )}
-    </div>
+      </div>
+      {showLocalWarning && (
+        <p role="note" className="mx-2 px-1 text-sm font-mono text-red-500">
+          Local URLS are not supported 
+        </p>
+      )}
+    </>
   )
 }
 
