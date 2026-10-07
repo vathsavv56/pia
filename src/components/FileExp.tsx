@@ -245,7 +245,7 @@ const Node = ({ node, depth }: NodeProps) => {
             onKeyDown={handleKeyDown}
           >
             {icon}
-            <span className="truncate">{node.name}</span>
+            {label}
           </div>
           {actions}
         </div>
