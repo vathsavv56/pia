@@ -183,10 +183,18 @@ export const useCollectionStore = create<CollectionStoreType>()(
         removeTreeNode: (id) =>
           set((state) => {
             const nodes = removeNode(state.nodes, id)
-            const openIds = state.openIds.filter((openId) => openId !== id)
-            const stillThere = collectRequests(nodes).some(
-              (node) => node.id === state.activeId,
+            // Deleting a folder also deletes the requests inside it, so drop
+            // every tab whose request no longer exists — not just the id
+            // itself. Otherwise activeId can point at a dead request and
+            // Client ping-pongs between / and /req/:deadId forever.
+            const alive = new Set(
+              collectRequests(nodes).map((node) => node.id),
             )
+            const openIds = state.openIds.filter((openId) =>
+              alive.has(openId),
+            )
+            const stillThere =
+              state.activeId !== null && alive.has(state.activeId)
             return {
               nodes,
               openIds,
